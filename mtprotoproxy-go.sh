@@ -112,7 +112,7 @@ function check_os(){
 		exit 1
 	fi
 	clear
-	echo -e "${ok_font}Support OS: ${System_OS}${OS_Version} $(uname -m) with ${daemon_name}"
+	echo -e "${ok_font}Support OS: ${System_OS}${OS_Version} $(uname -m) with ${daemon_name}."
 }
 
 function check_install_status(){
@@ -862,6 +862,15 @@ function os_update(){
 				clear
 				echo -e "${ok_font}系统源更新成功。"
 			fi
+			yum install -y python36u python36u-pip
+			if [[ $? -ne 0 ]];then
+				clear
+				echo -e "${error_font}所需组件安装失败！"
+				exit 1
+			else
+				clear
+				echo -e "${ok_font}所需组件安装成功。"
+			fi
 		elif [ "${OS_Version}" == "7" ]; then
 			yum install -y wget curl unzip lsof cron daemon firewalld ca-certificates python yum-utils epel-release
 			if [[ $? -ne 0 ]];then
@@ -881,15 +890,15 @@ function os_update(){
 				clear
 				echo -e "${ok_font}系统源更新成功。"
 			fi
-		fi
-		yum install -y python36u
-		if [[ $? -ne 0 ]];then
-			clear
-			echo -e "${error_font}所需组件安装失败！"
-			exit 1
-		else
-			clear
-			echo -e "${ok_font}所需组件安装成功。"
+			yum install -y python36u python36u-pip
+			if [[ $? -ne 0 ]];then
+				clear
+				echo -e "${error_font}所需组件安装失败！"
+				exit 1
+			else
+				clear
+				echo -e "${ok_font}所需组件安装成功。"
+			fi
 		fi
 		pip3.6 install --upgrade pip
 		if [[ $? -ne 0 ]];then
