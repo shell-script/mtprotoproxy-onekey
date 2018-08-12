@@ -695,14 +695,50 @@ function upgrade_program(){
 			echo -e "${info_font}如需获得更详细的报错信息，请在shell窗口中往上滑动。"
 			exit 1
 		fi
-		clear
+		chmod +x "/usr/local/mtprotoproxy/mtprotoproxy.py"
+		if [[ $? -eq 0 ]];then
+			clear
+			echo -e "${ok_font}设置MTProtoProxy执行权限成功。"
+		else
+			clear
+			rm -f program.zip
+			if [[ $? -eq 0 ]];then
+				clear
+				echo -e "${ok_font}删除下载文件成功。"
+			else
+				clear
+				echo -e "${error_font}删除下载文件失败！"
+			fi
+			echo -e "${error_font}设置MTProtoProxy执行权限失败！"
+			mv /usr/local/mtprotoproxy/mtprotoproxy.py.bak /usr/local/mtprotoproxy/mtprotoproxy.py
+			if [[ $? -eq 0 ]];then
+				clear
+				echo -e "${ok_font}恢复备份文件成功。"
+			else
+				clear
+				echo -e "${error_font}恢复备份文件失败！"
+			fi
+			mv /usr/local/mtprotoproxy/pyaes_bak /usr/local/mtprotoproxy/pyaes
+			if [[ $? -eq 0 ]];then
+				clear
+				echo -e "${ok_font}恢复备份文件成功。"
+			else
+				clear
+				echo -e "${error_font}恢复备份文件失败！"
+			fi
+			clear
+			echo -e "${error_font}MTProtoProxy升级失败！"
+			echo -e "${error_font}失败原因：下载MTProtoProxy文件失败。"
+			echo -e "${info_font}如需获得更详细的报错信息，请在shell窗口中往上滑动。"
+			exit 1
+		fi
 		rm -f /usr/local/mtprotoproxy/program.zip
 		if [[ $? -eq 0 ]];then
 			clear
 			echo -e "${ok_font}删除下载文件成功。"
 		else
 			clear
-			echo -e "${error_font}删除下载文件失败！"
+			echo -e "${warning_font}删除下载文件失败！"
 		fi
 		rm -f /usr/local/mtprotoproxy/mtprotoproxy.py.bak
 		if [[ $? -eq 0 ]];then
@@ -710,7 +746,7 @@ function upgrade_program(){
 			echo -e "${ok_font}删除备份文件成功。"
 		else
 			clear
-			echo -e "${error_font}删除备份文件失败！"
+			echo -e "${warning_font}删除备份文件失败！"
 		fi
 		rm -rf /usr/local/mtprotoproxy/pyaes_bak
 		if [[ $? -eq 0 ]];then
@@ -718,7 +754,7 @@ function upgrade_program(){
 			echo -e "${ok_font}删除备份文件夹成功。"
 		else
 			clear
-			echo -e "${error_font}删除备份文件夹失败！"
+			echo -e "${warning_font}删除备份文件夹失败！"
 		fi
 		clear
 		echo -e "${ok_font}MTProtoProxy更新成功。"
