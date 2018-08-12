@@ -6,6 +6,8 @@
 ```bash
 apt-get install -y curl && curl -O https://raw.githubusercontent.com/shell-script/mtprotoproxy-onekey/master/mtprotoproxy-go.sh && bash mtprotoproxy-go.sh
 ```
-# Description:
-**Program.zip** uses the **MIT license**, and the project has modified **config.py**.
+- - -
+- - -
+### Copyright Notice
+**Program.zip** uses the **MIT license**, and the project has modified **config.py**.<br>
 Original project URL: [alexbers/mtprotoproxy](https://github.com/alexbers/mtprotoproxy)
