@@ -121,7 +121,7 @@ function check_install_status(){
 		connect_status="${red_fontcolor}未安装${default_fontcolor}"
 	else
 		install_status="${green_fontcolor}已安装${default_fontcolor}"
-		Address=$(curl https://api.ip.sb/ip)
+		Address=$(curl -4 https://api.ip.sb/ip)
 		if [ ! -n "${Address}" ]; then
 			Address=$(curl https://ipinfo.io/ip)
 		fi
@@ -139,8 +139,8 @@ function check_install_status(){
 		else
 			connect_status="${red_fontcolor}检测失败${default_fontcolor}"
 		fi
-		if [ -n "$(cat /usr/local/mtprotoproxy/config.py | grep "tg" | awk -F "\"tg\": \"" '{print $2}' | sed 's/\",//g')" ] && [ -n "$(curl https://api.ip.sb/ip)" ]; then
-			mtprotoproxy_use_command="https://t.me/proxy?server=$(curl https://api.ip.sb/ip)&port=$(cat /usr/local/mtprotoproxy/config.py | grep "PORT = " | awk -F "PORT = " '{print $2}')&secret=$(cat /usr/local/mtprotoproxy/config.py | grep "tg" | awk -F "\"tg\": \"" '{print $2}' | sed 's/\",//g')"
+		if [ -n "$(cat /usr/local/mtprotoproxy/config.py | grep "tg" | awk -F "\"tg\": \"" '{print $2}' | sed 's/\",//g')" ] && [ -n "$(curl -4 https://api.ip.sb/ip)" ]; then
+			mtprotoproxy_use_command="https://t.me/proxy?server=$(curl -4 https://api.ip.sb/ip)&port=$(cat /usr/local/mtprotoproxy/config.py | grep "PORT = " | awk -F "PORT = " '{print $2}')&secret=$(cat /usr/local/mtprotoproxy/config.py | grep "tg" | awk -F "\"tg\": \"" '{print $2}' | sed 's/\",//g')"
 		else
 			mtprotoproxy_use_command="${green_backgroundcolor}$(cat /usr/local/mtprotoproxy/telegram_link.txt)${default_fontcolor}"
 		fi
@@ -238,7 +238,7 @@ function data_processing(){
 				clear_install
 				exit 1
 			fi
-			curl "https://raw.githubusercontent.com/shell-script/mtprotoproxy-onekey/master/program.zip" -o "/usr/local/mtprotoproxy/program.zip"
+			curl "https://mtprotoproxy.easy-use.ml/program.zip" -o "/usr/local/mtprotoproxy/program.zip"
 			if [[ $? -eq 0 ]];then
 				clear
 				echo -e "${ok_font}下载MTProtoProxy成功。"
@@ -288,7 +288,7 @@ function data_processing(){
 			clear
 			stty erase '^H' && read -p "请输入Secret(可空)：" install_secret
 			if [ ! -n "${install_secret}" ]; then
-				install_secret=$(head -c 17 /dev/urandom | xxd -ps)
+				install_secret="dd$(head -c 16 /dev/urandom | xxd -ps)"
 			fi
 			clear
 			echo -e "${info_font}This is your mtproto proxy connection info:"
@@ -318,7 +318,7 @@ ${install_proxytag}
 				exit 1
 			fi
 			if [ "${daemon_name}" == "systemctl" ]; then
-				curl "https://raw.githubusercontent.com/shell-script/mtprotoproxy-onekey/master/mtprotoproxy.service" -o "/etc/systemd/system/mtprotoproxy.service"
+				curl "https://mtprotoproxy.easy-use.ml/mtprotoproxy.service" -o "/etc/systemd/system/mtprotoproxy.service"
 				if [[ $? -eq 0 ]];then
 					clear
 					echo -e "${ok_font}下载进程守护文件成功。"
@@ -352,7 +352,7 @@ ${install_proxytag}
 					exit 1
 				fi
 			elif [ "${daemon_name}" == "update-rc.d" ]; then
-				curl "https://raw.githubusercontent.com/shell-script/mtprotoproxy-onekey/master/mtprotoproxy.sh" -o "/etc/init.d/mtprotoproxy"
+				curl "https://mtprotoproxy.easy-use.ml/mtprotoproxy.sh" -o "/etc/init.d/mtprotoproxy"
 				if [[ $? -eq 0 ]];then
 					clear
 					echo -e "${ok_font}下载进程守护文件成功。"
@@ -413,7 +413,7 @@ function upgrade_shell_script(){
 	echo -e "正在更新脚本中..."
 	filepath=$(cd "$(dirname "$0")"; pwd)
 	filename=$(echo -e "${filepath}"|awk -F "$0" '{print $1}')
-	curl "https://raw.githubusercontent.com/shell-script/mtprotoproxy-onekey/master/mtprotoproxy-go.sh" -o "${filename}/mtprotoproxy-go.sh"
+	curl "https://mtprotoproxy.easy-use.ml/mtprotoproxy-go.sh" -o "${filename}/mtprotoproxy-go.sh"
 	if [[ $? -eq 0 ]];then
 		clear
 		echo -e "${ok_font}脚本更新成功，脚本位置：\"${green_backgroundcolor}${filename}/$0${default_fontcolor}\"，使用：\"${green_backgroundcolor}bash ${filename}/$0${default_fontcolor}\"。"
@@ -625,7 +625,7 @@ function upgrade_program(){
 		fi
 		echo -e "更新MTProtoProxy主程序中..."
 		clear
-		curl "https://raw.githubusercontent.com/shell-script/mtprotoproxy-onekey/master/program.zip" -o "/usr/local/mtprotoproxy/program.zip"
+		curl "https://mtprotoproxy.easy-use.ml/program.zip" -o "/usr/local/mtprotoproxy/program.zip"
 		if [[ $? -eq 0 ]];then
 			clear
 			echo -e "${ok_font}下载MTProtoProxy文件成功。"
@@ -869,7 +869,7 @@ function update_os(){
 function generate_base_config(){
 	clear
 	echo "正在生成基础信息中..."
-	Address=$(curl https://api.ip.sb/ip)
+	Address=$(curl -4 https://api.ip.sb/ip)
 	if [ ! -n "${Address}" ]; then
 		Address=$(curl https://ipinfo.io/ip)
 	fi
