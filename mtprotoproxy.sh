@@ -168,15 +168,13 @@ function main(){
 	esac
 }
 
-while [[ $# > 0 ]];do
-	case "$1" in
-		start|stop|restart|status)
-			operational="$1"
-			main
-		;;
-		*)
-			echo -e "${info_font}Usage: $0 {start|stop|restart|status}" >&2
-			exit 3
-		;;
-	esac
-done
+case "$1" in
+	start|stop|restart|status)
+		operational="$1"
+		main
+	;;
+	*)
+		echo -e "${info_font}Usage: $0 {start|stop|restart|status}" >&2
+		exit 3
+	;;
+esac
