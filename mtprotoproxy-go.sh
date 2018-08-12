@@ -115,18 +115,18 @@ function check_os(){
 
 function check_install_status(){
 	install_type=$(cat /usr/local/mtprotoproxy/install_type.txt)
-	if [[ ${install_type} = "" ]]; then
+	if [ ! -n "${install_type}" ]; then
 		install_status="${red_fontcolor}未安装${default_fontcolor}"
 		mtprotoproxy_use_command="${red_fontcolor}未安装${default_fontcolor}"
 		connect_status="${red_fontcolor}未安装${default_fontcolor}"
 	else
 		install_status="${green_fontcolor}已安装${default_fontcolor}"
-		Address=$(curl https://api.ip.sb/ip)
+		Address="$(curl -4 https://api.ip.sb/ip)"
 		if [ ! -n "${Address}" ]; then
-			Address=$(curl https://ipinfo.io/ip)
+			Address="$(curl https://ipinfo.io/ip)"
 		fi
 		if [ -n "${Address}" ]; then
-			connect_base_status=$(curl "https://tcp.srun.in/tcp.php?ip=${Address}&port=$(cat /usr/local/mtprotoproxy/config.py | grep "PORT = " | awk -F "PORT = " '{print $2}')&type=1")
+			connect_base_status="$(curl "https://tcp.srun.in/tcp.php?ip=${Address}&port=$(cat /usr/local/mtprotoproxy/config.py | grep "PORT = " | awk -F "PORT = " '{print $2}')&type=1")"
 			if [ "${connect_base_status}" == "OK" ]; then
 				connect_status="${green_fontcolor}正常连通${default_fontcolor}"
 			elif [ "${connect_base_status}" == "Port closed" ]; then
@@ -139,18 +139,18 @@ function check_install_status(){
 		else
 			connect_status="${red_fontcolor}检测失败${default_fontcolor}"
 		fi
-		if [ -n "$(cat /usr/local/mtprotoproxy/config.py | grep "tg" | awk -F "\"tg\": \"" '{print $2}' | sed 's/\",//g')" ] && [ -n "$(curl https://api.ip.sb/ip)" ]; then
-			mtprotoproxy_use_command="https://t.me/proxy?server=$(curl https://api.ip.sb/ip)&port=$(cat /usr/local/mtprotoproxy/config.py | grep "PORT = " | awk -F "PORT = " '{print $2}')&secret=$(cat /usr/local/mtprotoproxy/config.py | grep "tg" | awk -F "\"tg\": \"" '{print $2}' | sed 's/\",//g')"
+		if [ -n "$(cat /usr/local/mtprotoproxy/config.py | grep "tg" | awk -F "\"tg\": \"" '{print $2}' | sed 's/\",//g')" ]; then
+			mtprotoproxy_use_command="https://t.me/proxy?server=${Address}&port=$(cat /usr/local/mtprotoproxy/config.py | grep "PORT = " | awk -F "PORT = " '{print $2}')&secret=$(cat /usr/local/mtprotoproxy/config.py | grep "tg" | awk -F "\"tg\": \"" '{print $2}' | sed 's/\",//g')"
 		else
 			mtprotoproxy_use_command="${green_backgroundcolor}$(cat /usr/local/mtprotoproxy/telegram_link.txt)${default_fontcolor}"
 		fi
 	fi
 	mtprotoproxy_program=$(find /usr/local/mtprotoproxy/mtprotoproxy.py)
-	if [[ ${mtprotoproxy_program} = "" ]]; then
+	if [ ! -n "${mtprotoproxy_program}" ]; then
 		mtprotoproxy_status="${red_fontcolor}未安装${default_fontcolor}"
 	else
 		mtprotoproxy_pid=$(ps -ef |grep "mtprotoproxy" |grep -v "grep" | grep -v ".sh"| grep -v "init.d" |grep -v "service" |awk '{print $2}')
-		if [[ ${mtprotoproxy_pid} = "" ]]; then
+		if [ ! -n "${mtprotoproxy_pid}" ]; then
 			mtprotoproxy_status="${red_fontcolor}未运行${default_fontcolor}"
 		else
 			mtprotoproxy_status="${green_fontcolor}正在运行${default_fontcolor} | ${green_fontcolor}${mtprotoproxy_pid}${default_fontcolor}"
