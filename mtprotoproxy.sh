@@ -30,7 +30,7 @@ function set_fonts_colors(){
 }
 
 function base_check(){
-	[ $(id -u) != "0" ] && { echo "${error_font}You must be root to run this script."; exit 1; }
+	[ $(id -u) != "0" ] && { echo "${error_font}You must be root to run this script."; exit_code=1; }
 
 	if [ -n "$(grep 'Aliyun Linux release' /etc/issue)" -o -e /etc/redhat-release ]; then
 		System_OS="CentOS"
@@ -55,7 +55,7 @@ function base_check(){
 		[ -n "$(grep 'Linux Mint 18' /etc/issue)" ] && OS_Version=16
 	else
 		echo -e "${error_font}Unsupport OS, please change your OS and retry."
-		exit 1
+		exit_code=1
 	fi
 
 	if [[ "$(uname -m)" == "i686" ]] || [[ "$(uname -m)" == "i386" ]]; then
@@ -78,13 +78,13 @@ function base_check(){
 		System_Bit="s390x"
 	else
 		echo -e "${error_font}Unsupported architecture, please change your architecture and retry."
-		exit 1
+		exit_code=1
 	fi
 }
 
 function check_running(){
 	running_pid=$(ps -ef |grep "mtprotoproxy" |grep -v "grep" | grep -v ".sh"| grep -v "init.d" |grep -v "service" |awk '{print $2}')
-	if [ ! -n "${running_pid}" ]; then
+	if [ -n "${running_pid}" ]; then
 		return 0
 	else
 		return 1
@@ -94,7 +94,7 @@ function check_running(){
 function start_running(){
 	check_running
 	if [[ $? -eq 0 ]]; then
-		echo -e "${info_font}MTProtoProxy is running now, PID: ${running_pid}." && exit 0
+		echo -e "${info_font}MTProtoProxy is running now, PID: ${running_pid}." && exit_code=0
 	else
 		cd /usr/local/mtprotoproxy
 		echo -e "Try to start MTProtoProxy..."
@@ -103,10 +103,10 @@ function start_running(){
 		check_running
 		if [[ $? -eq 0 ]]; then
 			echo -e "${ok_font}Started successfully, MTProtoProxy is running now."
-			exit 0
+			exit_code=0
 		else
 			echo -e "${error_font}Failed to start, please retry later."
-			exit 1
+			exit_code=1
 		fi
 	fi
 }
@@ -117,14 +117,14 @@ function stop_running(){
 		kill -9 "${running_pid}"
 		if [[ $? -eq 0 ]]; then
 			echo -e "${ok_font}Stopped successfully, MTProtoProxy isn't running now."
-			exit 0
+			exit_code=0
 		else
 			echo -e "${error_font}Failed to stop, please retry later."
-			exit 1
+			exit_code=1
 		fi
 	else
 		echo -e "${error_font}MTProtoProxy isn't running."
-		exit 1
+		exit_code=1
 	fi
 }
 
@@ -132,10 +132,10 @@ function check_running_status(){
 	check_running
 	if [[ $? -eq 0 ]]; then
 		echo -e "${ok_font}MTProtoProxy is running, PID: ${running_pid}."
-		exit 0
+		exit_code=0
 	else
 		echo -e "${error_font}MTProtoProxy isn't running."
-		exit 1
+		exit_code=1
 	fi
 }
 
@@ -163,7 +163,7 @@ function main(){
 		;;
 		*)
 			echo -e "${info_font}Usage: $0 {start|stop|restart|status}" >&2
-			exit 3
+			exit_code=3
 		;;
 	esac
 }
@@ -175,6 +175,7 @@ case "$1" in
 	;;
 	*)
 		echo -e "${info_font}Usage: $0 {start|stop|restart|status}" >&2
-		exit 3
+		exit_code=3
 	;;
 esac
+exit "${exit_code}"
