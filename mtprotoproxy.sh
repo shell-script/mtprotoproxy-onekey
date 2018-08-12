@@ -1,5 +1,7 @@
 #!/bin/bash
 # chkconfig: 2345 90 10
+# description: MTProtoProxy
+
 ######################################################
 # Anything wrong? Contact me via telegram: @CN_SZTL. #
 ######################################################
@@ -112,7 +114,7 @@ function start_running(){
 function stop_running(){
 	check_running
 	if [[ $? -eq 0 ]]; then
-		kill -9 "${check_running}"
+		kill -9 "${running_pid}"
 		if [[ $? -eq 0 ]]; then
 			echo -e "${ok_font}Stopped successfully, MTProtoProxy isn't running now."
 			exit 0
