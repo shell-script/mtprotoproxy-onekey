@@ -1,0 +1,8 @@
+[Unit]
+Description=mtprotoproxy
+After=network.target
+[Service]
+ExecStart=/usr/local/mtprotoproxy/mtprotoproxy.py
+Restart=always
+[Install]
+WantedBy=multi-user.target
