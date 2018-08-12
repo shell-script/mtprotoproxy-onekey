@@ -272,6 +272,18 @@ function data_processing(){
 				exit 1
 			fi
 			clear
+			chmod +x "/usr/local/mtprotoproxy/mtprotoproxy.py"
+			if [[ $? -eq 0 ]];then
+				clear
+				echo -e "${ok_font}设置MTProtoProxy执行权限成功。"
+			else
+				clear
+				echo -e "${error_font}设置MTProtoProxy执行权限失败！"
+				clear_install_reason="设置MTProtoProxy执行权限失败。"
+				clear_install
+				exit 1
+			fi
+			clear
 			input_port
 			clear
 			stty erase '^H' && read -p "请输入Secret(可空)：" install_secret
