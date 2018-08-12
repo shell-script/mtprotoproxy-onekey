@@ -413,7 +413,7 @@ function upgrade_shell_script(){
 	echo -e "正在更新脚本中..."
 	filepath=$(cd "$(dirname "$0")"; pwd)
 	filename=$(echo -e "${filepath}"|awk -F "$0" '{print $1}')
-	curl "https://raw.githubusercontent.com/shell-script/mtprotoproxy-onekey/master/mtprotoproxy-go.sh" -o "${filename}/$0"
+	curl "https://raw.githubusercontent.com/shell-script/mtprotoproxy-onekey/master/mtprotoproxy-go.sh" -o "${filename}/mtprotoproxy-go.sh"
 	if [[ $? -eq 0 ]];then
 		clear
 		echo -e "${ok_font}脚本更新成功，脚本位置：\"${green_backgroundcolor}${filename}/$0${default_fontcolor}\"，使用：\"${green_backgroundcolor}bash ${filename}/$0${default_fontcolor}\"。"
