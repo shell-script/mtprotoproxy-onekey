@@ -1115,7 +1115,7 @@ function make_python_for_centos5(){
 function generate_base_config(){
 	clear
 	echo "正在生成基础信息中..."
-	Address=$(curl https://api.ip.sb/ip)
+	Address=$(curl -4 https://api.ip.sb/ip)
 	if [ ! -n "${Address}" ]; then
 		Address=$(curl https://ipinfo.io/ip)
 	fi
