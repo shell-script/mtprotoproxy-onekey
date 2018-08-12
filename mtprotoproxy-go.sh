@@ -125,7 +125,7 @@ function check_install_status(){
 		if [ ! -n "${Address}" ]; then
 			Address=$(curl https://ipinfo.io/ip)
 		fi
-		if [ -n "${Address}"]; then
+		if [ -n "${Address}" ]; then
 			connect_base_status=$(curl "https://tcp.srun.in/tcp.php?ip=${Address}&port=$(cat /usr/local/mtprotoproxy/config.py | grep "PORT = " | awk -F "PORT = " '{print $2}')&type=1")
 			if [ "${connect_base_status}" == "OK" ]; then
 				connect_status="${green_fontcolor}正常连通${default_fontcolor}"
@@ -139,7 +139,7 @@ function check_install_status(){
 		else
 			connect_status="${red_fontcolor}检测失败${default_fontcolor}"
 		fi
-		if [ -n "$(cat /usr/local/mtprotoproxy/config.py | grep "tg" | awk -F "\"tg\": \"" '{print $2}' | sed 's/\",//g')"] && [ -n "$(curl https://api.ip.sb/ip)"]; then
+		if [ -n "$(cat /usr/local/mtprotoproxy/config.py | grep "tg" | awk -F "\"tg\": \"" '{print $2}' | sed 's/\",//g')" ] && [ -n "$(curl https://api.ip.sb/ip)" ]; then
 			mtprotoproxy_use_command="https://t.me/proxy?server=$(curl https://api.ip.sb/ip)&port=$(cat /usr/local/mtprotoproxy/config.py | grep "PORT = " | awk -F "PORT = " '{print $2}')&secret=$(cat /usr/local/mtprotoproxy/config.py | grep "tg" | awk -F "\"tg\": \"" '{print $2}' | sed 's/\",//g')"
 		else
 			mtprotoproxy_use_command="${green_backgroundcolor}$(cat /usr/local/mtprotoproxy/telegram_link.txt)${default_fontcolor}"
@@ -886,7 +886,7 @@ function input_port(){
 		install_port="1080"
 	fi
 	check_port
-	echo -e "${install_port}" > "/usr/local/mtproto/install_port.txt"
+	echo -e "${install_port}" > "/usr/local/mtprotoproxy/install_port.txt"
 	if [[ $? -eq 0 ]];then
 		clear
 		echo -e "${ok_font}MTProtoProxy端口配置成功。"
@@ -915,14 +915,14 @@ function check_port(){
 		[yY][eE][sS]|[yY])
 			clear
 			echo -e "正在尝试强制终止该进程..."
-			if [ -n "$(lsof -i:"${install_port}" | awk '{print $1}' | grep -v "COMMAND" | grep "nginx")"]; then
+			if [ -n "$(lsof -i:"${install_port}" | awk '{print $1}' | grep -v "COMMAND" | grep "nginx")" ]; then
 				service nginx stop
 			fi
-			if [ -n "$(lsof -i:"${install_port}" | awk '{print $1}' | grep -v "COMMAND" | grep "apache")"]; then
+			if [ -n "$(lsof -i:"${install_port}" | awk '{print $1}' | grep -v "COMMAND" | grep "apache")" ]; then
 				service apache stop
 				service apache2 stop
 			fi
-			if [ -n "$(lsof -i:"${install_port}" | awk '{print $1}' | grep -v "COMMAND" | grep "caddy")"]; then
+			if [ -n "$(lsof -i:"${install_port}" | awk '{print $1}' | grep -v "COMMAND" | grep "caddy")" ]; then
 				service caddy stop
 			fi
 			lsof -i:"${install_port}" | awk '{print $2}'| grep -v "PID" | xargs kill -9
