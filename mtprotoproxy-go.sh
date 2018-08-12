@@ -123,29 +123,6 @@ function check_install_status(){
 		connect_status="${red_fontcolor}未安装${default_fontcolor}"
 	else
 		install_status="${green_fontcolor}已安装${default_fontcolor}"
-		Address="$(curl -4 https://api.ip.sb/ip)"
-		if [ ! -n "${Address}" ]; then
-			Address="$(curl https://ipinfo.io/ip)"
-		fi
-		if [ -n "${Address}" ]; then
-			connect_base_status="$(curl "https://tcp.srun.in/tcp.php?ip=${Address}&port=$(cat /usr/local/mtprotoproxy/config.py | grep "PORT = " | awk -F "PORT = " '{print $2}')&type=1")"
-			if [ "${connect_base_status}" == "OK" ]; then
-				connect_status="${green_fontcolor}正常连通${default_fontcolor}"
-			elif [ "${connect_base_status}" == "Port closed" ]; then
-				connect_status="${warning_fontcolor}端口未开启${default_fontcolor}"
-			elif [ "${connect_base_status}" == "No" ]; then
-				connect_status="${red_fontcolor}无法连通${default_fontcolor}"
-			else
-				connect_status="${red_fontcolor}检测失败${default_fontcolor}"
-			fi
-		else
-			connect_status="${red_fontcolor}检测失败${default_fontcolor}"
-		fi
-		if [ -n "$(cat /usr/local/mtprotoproxy/config.py | grep "tg" | awk -F "\"tg\": \"" '{print $2}' | sed 's/\",//g')" ]; then
-			mtprotoproxy_use_command="${green_backgroundcolor}https://t.me/proxy?server=${Address}&port=$(cat /usr/local/mtprotoproxy/config.py | grep "PORT = " | awk -F "PORT = " '{print $2}')&secret=$(cat /usr/local/mtprotoproxy/config.py | grep "tg" | awk -F "\"tg\": \"" '{print $2}' | sed 's/\",//g')${default_fontcolor}"
-		else
-			mtprotoproxy_use_command="${green_backgroundcolor}$(cat /usr/local/mtprotoproxy/telegram_link.txt)${default_fontcolor}"
-		fi
 	fi
 	mtprotoproxy_program=$(find /usr/local/mtprotoproxy/mtprotoproxy.py)
 	if [ ! -n "${mtprotoproxy_program}" ]; then
@@ -156,6 +133,31 @@ function check_install_status(){
 			mtprotoproxy_status="${red_fontcolor}未运行${default_fontcolor}"
 		else
 			mtprotoproxy_status="${green_fontcolor}正在运行${default_fontcolor} | ${green_fontcolor}${mtprotoproxy_pid}${default_fontcolor}"
+			Address="$(curl -4 https://api.ip.sb/ip)"
+			if [ ! -n "${Address}" ]; then
+				Address="$(curl https://ipinfo.io/ip)"
+			fi
+			if [ -n "${Address}" ]; then
+				connect_base_status="$(curl "https://tcp.srun.in/tcp.php?ip=${Address}&port=$(cat /usr/local/mtprotoproxy/config.py | grep "PORT = " | awk -F "PORT = " '{print $2}')&type=1")"
+				if [ "${connect_base_status}" == "OK" ]; then
+					connect_status="${green_fontcolor}正常连通${default_fontcolor}"
+				elif [ "${connect_base_status}" == "Port closed" ]; then
+					connect_status="${warning_fontcolor}端口未开启${default_fontcolor}"
+				elif [ "${connect_base_status}" == "No" ]; then
+					connect_status="${red_fontcolor}无法连通${default_fontcolor}"
+				else
+					connect_status="${red_fontcolor}检测失败${default_fontcolor}"
+				fi
+			else
+				connect_status="${red_fontcolor}检测失败${default_fontcolor}"
+			fi
+			if [ ! -n "$(cat "/usr/local/mtprotoproxy/running_log.log" | sed 's/tg: //g' | grep "tg://")" ]; then
+				mtprotoproxy_use_command="${green_backgroundcolor}$(cat "/usr/local/mtprotoproxy/running_log.log" | sed 's/tg: //g' | grep "tg://")${default_fontcolor}"
+			elif [ -n "$(cat /usr/local/mtprotoproxy/config.py | grep "tg" | awk -F "\"tg\": \"" '{print $2}' | sed 's/\",//g')" ]; then
+				mtprotoproxy_use_command="${green_backgroundcolor}https://t.me/proxy?server=${Address}&port=$(cat /usr/local/mtprotoproxy/config.py | grep "PORT = " | awk -F "PORT = " '{print $2}')&secret=$(cat /usr/local/mtprotoproxy/config.py | grep "tg" | awk -F "\"tg\": \"" '{print $2}' | sed 's/\",//g')${default_fontcolor}"
+			else
+				mtprotoproxy_use_command="${green_backgroundcolor}$(cat /usr/local/mtprotoproxy/telegram_link.txt)${default_fontcolor}"
+			fi
 		fi
 	fi
 }
@@ -1115,12 +1117,12 @@ function make_python_for_centos5(){
 function generate_base_config(){
 	clear
 	echo "正在生成基础信息中..."
-	Address=$(curl -4 https://api.ip.sb/ip)
+	Address="$(curl -4 https://api.ip.sb/ip)"
 	if [ ! -n "${Address}" ]; then
-		Address=$(curl https://ipinfo.io/ip)
+		Address="$(curl https://ipinfo.io/ip)"
 	fi
 	if [ ! -n "${Address}" ]; then
-		Address=$(curl http://members.3322.org/dyndns/getip)
+		Address="$(curl http://members.3322.org/dyndns/getip)"
 	fi
 	if [ ! -n "${Address}" ]; then
 		clear
