@@ -83,7 +83,7 @@ function base_check(){
 }
 
 function check_running(){
-	running_pid=$(ps -ef |grep "mtprotoproxy" |grep -v "grep" | grep -v ".sh"| grep -v "init.d" |grep -v "service" |awk '{print $2}')
+	running_pid="$(ps -ef |grep "mtprotoproxy" |grep -v "grep" | grep -v ".sh"| grep -v "init.d" |grep -v "service" |awk '{print $2}')"
 	if [ -n "${running_pid}" ]; then
 		return 0
 	else
@@ -94,11 +94,12 @@ function check_running(){
 function start_running(){
 	check_running
 	if [[ $? -eq 0 ]]; then
-		echo -e "${info_font}MTProtoProxy is running now, PID: ${running_pid}." && exit_code=0
+		echo -e "${info_font}MTProtoProxy is already running, PID: ${running_pid}."
+		exit_code=0
 	else
-		cd /usr/local/mtprotoproxy
+		cd "/usr/local/mtprotoproxy"
 		echo -e "Try to start MTProtoProxy..."
-		nohup ./mtprotoproxy.py > ./running_log.log 2>&1 &
+		nohup "/bin/env python3 /usr/local/mtprotoproxy/mtprotoproxy.py" > "/usr/local/mtprotoproxy/running_log.log" 2>&1 &
 		sleep 3s
 		check_running
 		if [[ $? -eq 0 ]]; then
@@ -123,15 +124,15 @@ function stop_running(){
 			exit_code=1
 		fi
 	else
-		echo -e "${error_font}MTProtoProxy isn't running."
-		exit_code=1
+		echo -e "${info_font}MTProtoProxy is already stopped."
+		exit_code=0
 	fi
 }
 
 function check_running_status(){
 	check_running
 	if [[ $? -eq 0 ]]; then
-		echo -e "${ok_font}MTProtoProxy is running, PID: ${running_pid}."
+		echo -e "${info_font}MTProtoProxy is running, PID: ${running_pid}."
 		exit_code=0
 	else
 		echo -e "${error_font}MTProtoProxy isn't running."
