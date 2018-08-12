@@ -97,17 +97,19 @@ function check_os(){
 	if [ -n "$(command -v systemctl)" ]; then
 		clear
 		daemon_name="systemctl"
-		echo -e "${ok_font}您的系统中已安装systemctl。"
+		echo -e "${ok_font}您的系统中已安装 systemctl。"
+	elif [ -n "$(command -v chkconfig)" ]; then
+		clear
+		daemon_name="chkconfig"
+		echo -e "${ok_font}您的系统中已安装 chkconfig。"
+	elif [ -n "$(command -v update-rc.d)" ]; then
+		clear
+		daemon_name="update-rc.d"
+		echo -e "${ok_font}您的系统中已安装 update-rc.d。"
 	else
-		if [ -n "$(command -v chkconfig)" ] || [ -n "$(command -v update-rc.d)" ]; then
-			clear
-			daemon_name="update-rc.d"
-			echo -e "${ok_font}您的系统中已安装 chkconfig / update-rc.d。"
-		else
-			clear
-			echo -e "${error_font}您的系统中没有配置进程守护工具，安装无法继续！"
-			exit 1
-		fi
+		clear
+		echo -e "${error_font}您的系统中没有配置进程守护工具，安装无法继续！"
+		exit 1
 	fi
 	clear
 	echo -e "${ok_font}Support OS: ${System_OS}${OS_Version} $(uname -m) with ${daemon_name}"
@@ -140,7 +142,7 @@ function check_install_status(){
 			connect_status="${red_fontcolor}检测失败${default_fontcolor}"
 		fi
 		if [ -n "$(cat /usr/local/mtprotoproxy/config.py | grep "tg" | awk -F "\"tg\": \"" '{print $2}' | sed 's/\",//g')" ]; then
-			mtprotoproxy_use_command="https://t.me/proxy?server=${Address}&port=$(cat /usr/local/mtprotoproxy/config.py | grep "PORT = " | awk -F "PORT = " '{print $2}')&secret=$(cat /usr/local/mtprotoproxy/config.py | grep "tg" | awk -F "\"tg\": \"" '{print $2}' | sed 's/\",//g')"
+			mtprotoproxy_use_command="${green_backgroundcolor}https://t.me/proxy?server=${Address}&port=$(cat /usr/local/mtprotoproxy/config.py | grep "PORT = " | awk -F "PORT = " '{print $2}')&secret=$(cat /usr/local/mtprotoproxy/config.py | grep "tg" | awk -F "\"tg\": \"" '{print $2}' | sed 's/\",//g')${default_fontcolor}"
 		else
 			mtprotoproxy_use_command="${green_backgroundcolor}$(cat /usr/local/mtprotoproxy/telegram_link.txt)${default_fontcolor}"
 		fi
@@ -351,7 +353,7 @@ ${install_proxytag}
 					clear_install
 					exit 1
 				fi
-			elif [ "${daemon_name}" == "update-rc.d" ]; then
+			elif [ "${daemon_name}" == "update-rc.d" ] || [ "${daemon_name}" == "chkconfig" ]; then
 				curl "https://raw.githubusercontent.com/shell-script/mtprotoproxy-onekey/master/mtprotoproxy.sh" -o "/etc/init.d/mtprotoproxy"
 				if [[ $? -eq 0 ]];then
 					clear
@@ -542,7 +544,7 @@ function uninstall_program(){
 				clear
 				echo -e "${error_font}删除进程守护文件失败！"
 			fi
-		elif [ "${daemon_name}" == "update-rc.d" ]; then
+		elif [ "${daemon_name}" == "update-rc.d" ] || [ "${daemon_name}" == "chkconfig" ]; then
 			if [ "${System_OS}" == "CentOS" ]; then
 				chkconfig --del mtprotoproxy
 			elif [[ ${System_OS} =~ ^Debian$|^Ubuntu$ ]];then
@@ -750,7 +752,7 @@ function clear_install(){
 				clear
 				echo -e "${error_font}删除进程守护文件失败！"
 			fi
-		elif [ "${daemon_name}" == "update-rc.d" ]; then
+		elif [ "${daemon_name}" == "update-rc.d" ] || [ "${daemon_name}" == "chkconfig" ]; then
 			if [ "${System_OS}" == "CentOS" ]; then
 				chkconfig --del mtprotoproxy
 			elif [[ ${System_OS} =~ ^Debian$|^Ubuntu$ ]];then
@@ -798,7 +800,7 @@ function clear_install(){
 	fi
 }
 
-function update_os(){
+function os_update(){
 	clear
 	echo -e "正在更新系统组件中..."
 	if [ "${System_OS}" == "CentOS" ]; then
