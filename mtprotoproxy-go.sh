@@ -152,7 +152,7 @@ function check_install_status(){
 				connect_status="${red_fontcolor}检测失败${default_fontcolor}"
 			fi
 			if [ -n "$(cat "/usr/local/mtprotoproxy/running_log.log" | sed 's/tg: //g' | grep "tg://")" ]; then
-				mtprotoproxy_use_command="${green_backgroundcolor}$(cat "/usr/local/mtprotoproxy/running_log.log" | sed 's/tg: //g' | grep "tg://")${default_fontcolor}"
+				mtprotoproxy_use_command="\n${green_backgroundcolor}$(cat "/usr/local/mtprotoproxy/running_log.log" | sed 's/tg: //g' | grep "tg://")${default_fontcolor}"
 			elif [ -n "$(cat /usr/local/mtprotoproxy/config.py | grep "tg" | awk -F "\"tg\": \"" '{print $2}' | sed 's/\",//g')" ]; then
 				mtprotoproxy_use_command="${green_backgroundcolor}https://t.me/proxy?server=${Address}&port=$(cat /usr/local/mtprotoproxy/config.py | grep "PORT = " | awk -F "PORT = " '{print $2}')&secret=$(cat /usr/local/mtprotoproxy/config.py | grep "tg" | awk -F "\"tg\": \"" '{print $2}' | sed 's/\",//g')${default_fontcolor}"
 			else
