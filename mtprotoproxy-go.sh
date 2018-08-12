@@ -121,7 +121,7 @@ function check_install_status(){
 		connect_status="${red_fontcolor}未安装${default_fontcolor}"
 	else
 		install_status="${green_fontcolor}已安装${default_fontcolor}"
-		Address=$(curl -4 https://api.ip.sb/ip)
+		Address=$(curl https://api.ip.sb/ip)
 		if [ ! -n "${Address}" ]; then
 			Address=$(curl https://ipinfo.io/ip)
 		fi
@@ -139,8 +139,8 @@ function check_install_status(){
 		else
 			connect_status="${red_fontcolor}检测失败${default_fontcolor}"
 		fi
-		if [ -n "$(cat /usr/local/mtprotoproxy/config.py | grep "tg" | awk -F "\"tg\": \"" '{print $2}' | sed 's/\",//g')" ] && [ -n "$(curl -4 https://api.ip.sb/ip)" ]; then
-			mtprotoproxy_use_command="https://t.me/proxy?server=$(curl -4 https://api.ip.sb/ip)&port=$(cat /usr/local/mtprotoproxy/config.py | grep "PORT = " | awk -F "PORT = " '{print $2}')&secret=$(cat /usr/local/mtprotoproxy/config.py | grep "tg" | awk -F "\"tg\": \"" '{print $2}' | sed 's/\",//g')"
+		if [ -n "$(cat /usr/local/mtprotoproxy/config.py | grep "tg" | awk -F "\"tg\": \"" '{print $2}' | sed 's/\",//g')" ] && [ -n "$(curl https://api.ip.sb/ip)" ]; then
+			mtprotoproxy_use_command="https://t.me/proxy?server=$(curl https://api.ip.sb/ip)&port=$(cat /usr/local/mtprotoproxy/config.py | grep "PORT = " | awk -F "PORT = " '{print $2}')&secret=$(cat /usr/local/mtprotoproxy/config.py | grep "tg" | awk -F "\"tg\": \"" '{print $2}' | sed 's/\",//g')"
 		else
 			mtprotoproxy_use_command="${green_backgroundcolor}$(cat /usr/local/mtprotoproxy/telegram_link.txt)${default_fontcolor}"
 		fi
@@ -238,7 +238,7 @@ function data_processing(){
 				clear_install
 				exit 1
 			fi
-			curl "https://mtprotoproxy.easy-use.ml/program.zip" -o "/usr/local/mtprotoproxy/program.zip"
+			curl "https://raw.githubusercontent.com/shell-script/mtprotoproxy-onekey/master/program.zip" -o "/usr/local/mtprotoproxy/program.zip"
 			if [[ $? -eq 0 ]];then
 				clear
 				echo -e "${ok_font}下载MTProtoProxy成功。"
@@ -288,7 +288,7 @@ function data_processing(){
 			clear
 			stty erase '^H' && read -p "请输入Secret(可空)：" install_secret
 			if [ ! -n "${install_secret}" ]; then
-				install_secret="dd$(head -c 16 /dev/urandom | xxd -ps)"
+				install_secret="$(head -c 16 /dev/urandom | xxd -ps)"
 			fi
 			clear
 			echo -e "${info_font}This is your mtproto proxy connection info:"
@@ -318,7 +318,7 @@ ${install_proxytag}
 				exit 1
 			fi
 			if [ "${daemon_name}" == "systemctl" ]; then
-				curl "https://mtprotoproxy.easy-use.ml/mtprotoproxy.service" -o "/etc/systemd/system/mtprotoproxy.service"
+				curl "https://raw.githubusercontent.com/shell-script/mtprotoproxy-onekey/master/mtprotoproxy.service" -o "/etc/systemd/system/mtprotoproxy.service"
 				if [[ $? -eq 0 ]];then
 					clear
 					echo -e "${ok_font}下载进程守护文件成功。"
@@ -352,7 +352,7 @@ ${install_proxytag}
 					exit 1
 				fi
 			elif [ "${daemon_name}" == "update-rc.d" ]; then
-				curl "https://mtprotoproxy.easy-use.ml/mtprotoproxy.sh" -o "/etc/init.d/mtprotoproxy"
+				curl "https://raw.githubusercontent.com/shell-script/mtprotoproxy-onekey/master/mtprotoproxy.sh" -o "/etc/init.d/mtprotoproxy"
 				if [[ $? -eq 0 ]];then
 					clear
 					echo -e "${ok_font}下载进程守护文件成功。"
@@ -413,7 +413,7 @@ function upgrade_shell_script(){
 	echo -e "正在更新脚本中..."
 	filepath=$(cd "$(dirname "$0")"; pwd)
 	filename=$(echo -e "${filepath}"|awk -F "$0" '{print $1}')
-	curl "https://mtprotoproxy.easy-use.ml/mtprotoproxy-go.sh" -o "${filename}/mtprotoproxy-go.sh"
+	curl "https://raw.githubusercontent.com/shell-script/mtprotoproxy-onekey/master/mtprotoproxy-go.sh" -o "${filename}/mtprotoproxy-go.sh"
 	if [[ $? -eq 0 ]];then
 		clear
 		echo -e "${ok_font}脚本更新成功，脚本位置：\"${green_backgroundcolor}${filename}/$0${default_fontcolor}\"，使用：\"${green_backgroundcolor}bash ${filename}/$0${default_fontcolor}\"。"
@@ -625,7 +625,7 @@ function upgrade_program(){
 		fi
 		echo -e "更新MTProtoProxy主程序中..."
 		clear
-		curl "https://mtprotoproxy.easy-use.ml/program.zip" -o "/usr/local/mtprotoproxy/program.zip"
+		curl "https://raw.githubusercontent.com/shell-script/mtprotoproxy-onekey/master/program.zip" -o "/usr/local/mtprotoproxy/program.zip"
 		if [[ $? -eq 0 ]];then
 			clear
 			echo -e "${ok_font}下载MTProtoProxy文件成功。"
@@ -820,11 +820,67 @@ function update_os(){
 			clear
 			echo -e "${ok_font}系统组件更新成功。"
 		fi
-		if [ "${OS_Version}" == "6" ]; then
-			yum install -y wget curl unzip lsof cron daemon iptables ca-certificates python python3
+		if [ "${OS_Version}" == "5" ]; then
+			yum install -y wget curl unzip lsof cron daemon iptables ca-certificates python yum-utils gcc make zlib-devel bzip2-devel openssl-devel ncurses-devel sqlite-devel readline-devel tk-devel gdbm-devel db4-devel libpcap-devel xz-devel
+			if [[ $? -ne 0 ]];then
+				clear
+				echo -e "${error_font}所需组件安装失败！"
+				exit 1
+			else
+				clear
+				echo -e "${ok_font}所需组件安装成功。"
+			fi
+			yum-builddep python
+			if [[ $? -ne 0 ]];then
+				clear
+				echo -e "${error_font}所需组件安装失败！"
+				exit 1
+			else
+				clear
+				echo -e "${ok_font}所需组件安装成功。"
+			fi
+			clear
+			make_python_for_centos5
+		elif [ "${OS_Version}" == "6" ]; then
+			yum install -y wget curl unzip lsof cron daemon iptables ca-certificates python yum-utils epel-release
+			if [[ $? -ne 0 ]];then
+				clear
+				echo -e "${error_font}所需组件安装失败！"
+				exit 1
+			else
+				clear
+				echo -e "${ok_font}所需组件安装成功。"
+			fi
+			yum install -y "https://centos6.iuscommunity.org/ius-release.rpm"
+			if [[ $? -ne 0 ]];then
+				clear
+				echo -e "${error_font}系统源更新失败！"
+				exit 1
+			else
+				clear
+				echo -e "${ok_font}系统源更新成功。"
+			fi
 		elif [ "${OS_Version}" == "7" ]; then
-			yum install -y wget curl unzip lsof cron daemon firewalld ca-certificates python python3
+			yum install -y wget curl unzip lsof cron daemon firewalld ca-certificates python yum-utils epel-release
+			if [[ $? -ne 0 ]];then
+				clear
+				echo -e "${error_font}所需组件安装失败！"
+				exit 1
+			else
+				clear
+				echo -e "${ok_font}所需组件安装成功。"
+			fi
+			yum install -y "https://centos7.iuscommunity.org/ius-release.rpm"
+			if [[ $? -ne 0 ]];then
+				clear
+				echo -e "${error_font}系统源更新失败！"
+				exit 1
+			else
+				clear
+				echo -e "${ok_font}系统源更新成功。"
+			fi
 		fi
+		yum install -y python36u
 		if [[ $? -ne 0 ]];then
 			clear
 			echo -e "${error_font}所需组件安装失败！"
@@ -832,6 +888,24 @@ function update_os(){
 		else
 			clear
 			echo -e "${ok_font}所需组件安装成功。"
+		fi
+		pip3.6 install --upgrade pip
+		if [[ $? -ne 0 ]];then
+			clear
+			echo -e "${error_font}pip3更新失败！"
+			exit 1
+		else
+			clear
+			echo -e "${ok_font}pip3更新成功。"
+		fi
+		pip3.6 install cryptography
+		if [[ $? -ne 0 ]];then
+			clear
+			echo -e "${error_font}cryptography安装失败！"
+			exit 1
+		else
+			clear
+			echo -e "${ok_font}cryptography安装成功。"
 		fi
 	elif [ "${System_OS}" == "Debian" ] || [ "${System_OS}" == "Ubuntu" ]; then
 		apt-get update -y
@@ -852,7 +926,7 @@ function update_os(){
 			clear
 			echo -e "${ok_font}系统组件更新成功。"
 		fi
-		apt-get install -y wget curl unzip lsof cron daemon iptables ca-certificates python python3
+		apt-get install -y wget curl unzip lsof cron daemon iptables ca-certificates python python3 python3-pip
 		if [[ $? -ne 0 ]];then
 			clear
 			echo -e "${error_font}所需组件安装失败！"
@@ -861,15 +935,137 @@ function update_os(){
 			clear
 			echo -e "${ok_font}所需组件安装成功。"
 		fi
+		pip3 install --upgrade pip
+		if [[ $? -ne 0 ]];then
+			clear
+			echo -e "${error_font}pip3更新失败！"
+			exit 1
+		else
+			clear
+			echo -e "${ok_font}pip3更新成功。"
+		fi
+		pip3 install cryptography
+		if [[ $? -ne 0 ]];then
+			clear
+			echo -e "${error_font}cryptography安装失败！"
+			exit 1
+		else
+			clear
+			echo -e "${ok_font}cryptography安装成功。"
+		fi
 	fi
 	clear
 	echo -e "${ok_font}相关组件 更新/安装 完毕。"
 }
 
+function make_python_for_centos5(){
+	clear
+	mkdir -p "/tmp/make_python_for_centos5"
+	if [[ $? -eq 0 ]];then
+		clear
+		echo -e "${ok_font}创建临时文件夹成功。"
+	else
+		clear
+		echo -e "${error_font}创建临时文件夹失败！"
+		exit 1
+	fi
+	cd "/tmp/make_python_for_centos5"
+	if [[ $? -eq 0 ]];then
+		clear
+		echo -e "${ok_font}进入临时文件夹成功。"
+	else
+		clear
+		echo -e "${error_font}进入临时文件夹失败！"
+		rm -rf "/tmp/make_python_for_centos5"
+		exit 1
+	fi
+	curl "https://www.python.org/ftp/python/3.6.4/Python-3.6.4.tgz" -o "/tmp/make_python_for_centos5/python3.6.tgz"
+	if [[ $? -eq 0 ]];then
+		clear
+		echo -e "${ok_font}下载Python3.6.4成功。"
+	else
+		clear
+		echo -e "${error_font}下载Python3.6.4失败！"
+		rm -rf "/tmp/make_python_for_centos5"
+		exit 1
+	fi
+	tar -zxvf "/tmp/make_python_for_centos5/python3.6.tgz"
+	if [[ $? -eq 0 ]];then
+		clear
+		echo -e "${ok_font}解压包文件成功。"
+	else
+		clear
+		echo -e "${error_font}解压包文件失败！"
+		rm -rf "/tmp/make_python_for_centos5"
+		exit 1
+	fi
+	rm -f "/tmp/make_python_for_centos5/python3.6.tgz"
+	if [[ $? -eq 0 ]];then
+		clear
+		echo -e "${ok_font}删除包文件成功。"
+	else
+		clear
+		echo -e "${error_font}删除包文件失败！"
+		rm -rf "/tmp/make_python_for_centos5"
+		exit 1
+	fi
+	cd "/tmp/make_python_for_centos5/Python-3.6.4"
+	if [[ $? -eq 0 ]];then
+		clear
+		echo -e "${ok_font}进入Python文件夹成功。"
+	else
+		clear
+		echo -e "${error_font}进入Python文件夹失败！"
+		rm -rf "/tmp/make_python_for_centos5"
+		exit 1
+	fi
+	./configure
+	if [[ $? -eq 0 ]];then
+		clear
+		echo -e "${ok_font}配置Python成功。"
+	else
+		clear
+		echo -e "${error_font}配置Python失败！"
+		rm -rf "/tmp/make_python_for_centos5"
+		exit 1
+	fi
+	make && make install
+	if [[ $? -eq 0 ]];then
+		clear
+		echo -e "${ok_font}编译安装Python成功。"
+	else
+		clear
+		echo -e "${error_font}编译安装Python失败！"
+		make clean
+		rm -rf "/tmp/make_python_for_centos5"
+		exit 1
+	fi
+	rm -rf "/tmp/make_python_for_centos5"
+	if [[ $? -eq 0 ]];then
+		clear
+		echo -e "${ok_font}删除临时文件夹成功。"
+	else
+		clear
+		echo -e "${error_font}删除临时文件夹失败！"
+		exit 1
+	fi
+	cd ~
+	if [[ $? -eq 0 ]];then
+		clear
+		echo -e "${ok_font}返回当前目录成功。"
+	else
+		clear
+		echo -e "${error_font}返回当前目录失败！"
+		exit 1
+	fi
+	clear
+	echo -e "${ok_font}Python3.6.4安装成功。"
+}
+
 function generate_base_config(){
 	clear
 	echo "正在生成基础信息中..."
-	Address=$(curl -4 https://api.ip.sb/ip)
+	Address=$(curl https://api.ip.sb/ip)
 	if [ ! -n "${Address}" ]; then
 		Address=$(curl https://ipinfo.io/ip)
 	fi
