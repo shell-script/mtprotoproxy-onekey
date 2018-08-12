@@ -856,8 +856,7 @@ function os_update(){
 			yum install -y "https://centos6.iuscommunity.org/ius-release.rpm"
 			if [[ $? -ne 0 ]];then
 				clear
-				echo -e "${error_font}系统源更新失败！"
-				exit 1
+				echo -e "${warning_font}系统源更新失败！"
 			else
 				clear
 				echo -e "${ok_font}系统源更新成功。"
@@ -884,7 +883,7 @@ function os_update(){
 			yum install -y "https://centos7.iuscommunity.org/ius-release.rpm"
 			if [[ $? -ne 0 ]];then
 				clear
-				echo -e "${error_font}系统源更新失败！"
+				echo -e "${warning_font}系统源更新失败！"
 				exit 1
 			else
 				clear
