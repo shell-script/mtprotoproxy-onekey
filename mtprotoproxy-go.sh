@@ -135,12 +135,12 @@ function check_install_status(){
 			mtprotoproxy_use_command="${red_fontcolor}未运行${default_fontcolor}"
 		else
 			mtprotoproxy_status="${green_fontcolor}正在运行${default_fontcolor} | ${green_fontcolor}${mtprotoproxy_pid}${default_fontcolor}"
-			Address="$(curl -4 https://api.ip.sb/ip)"
+			Address="$(wget -qO- -t1 -T2 -4 https://api.ip.sb/ip)"
 			if [ ! -n "${Address}" ]; then
-				Address="$(curl https://ipinfo.io/ip)"
+				Address="$(wget -qO- -t1 -T2 https://ipinfo.io/ip)"
 			fi
 			if [ -n "${Address}" ]; then
-				connect_base_status="$(curl "https://tcp.srun.in/tcp.php?ip=${Address}&port=$(cat /usr/local/mtprotoproxy/config.py | grep "PORT = " | awk -F "PORT = " '{print $2}')&type=1")"
+				connect_base_status="$(wget -qO- -t1 "https://tcp.srun.in/tcp.php?ip=${Address}&port=$(cat /usr/local/mtprotoproxy/config.py | grep "PORT = " | awk -F "PORT = " '{print $2}')&type=1")"
 				if [ "${connect_base_status}" == "OK" ]; then
 					connect_status="${green_fontcolor}正常连通${default_fontcolor}"
 				elif [ "${connect_base_status}" == "Port closed" ]; then
@@ -179,11 +179,13 @@ MTProtoProxy当前运行状态：${mtprotoproxy_status}
 	5.启动程序
 	6.关闭程序
 	7.重启程序
+
+	8.显示连接信息
 --------------------------------------------------------------------------------------------------
 Telegram代理链接：${mtprotoproxy_use_command}
 --------------------------------------------------------------------------------------------------"
 	stty erase '^H' && read -p "请输入序号：" determine_type
-	if [[ ${determine_type} -ge 1 ]] && [[ ${determine_type} -le 7 ]]; then
+	if [[ ${determine_type} -ge 1 ]] && [[ ${determine_type} -le 8 ]]; then
 		data_processing
 	else
 		clear
@@ -215,6 +217,15 @@ function data_processing(){
 	elif [[ ${determine_type} = "7" ]]; then
 		prevent_uninstall_check
 		restart_service
+	elif [[ ${determine_type} = "8" ]]; then
+		prevent_uninstall_check
+		echo_connetion_info
+	elif [[ ${determine_type} = "9" ]]; then
+		prevent_uninstall_check
+		banned_ip
+	elif [[ ${determine_type} = "10" ]]; then
+		prevent_uninstall_check
+		unbanned_ip
 	else
 		prevent_install_check
 		os_update
@@ -496,6 +507,728 @@ function restart_service(){
 		else
 			clear
 			echo -e "${error_font}MTProtoProxy 重启失败！"
+		fi
+	fi
+}
+
+function echo_connetion_info(){
+	clear
+	echo -e "正在获取连接信息中..."
+	connectiong_port="$(cat "/usr/local/mtprotoproxy/config.py" | grep "PORT = " | awk -F "PORT = " '{print $2}')"
+	if [ ! -n "${connectiong_port}" ]; then
+		connectiong_port="$(cat "/usr/local/mtproto/install_port.txt")"
+	fi
+	connectiong_ips="$(netstat -anp | grep 'ESTABLISHED' | grep 'python3' | grep 'tcp' | grep ":${connectiong_port}" | awk '{print $5}' | awk -F ":" '{print $1}' | sort -u | grep -E -o "([0-9]{1,3}[\.]){3}[0-9]{1,3}")"
+	connectiong_ips_with_port="$(netstat -anp | grep 'ESTABLISHED' | grep 'python3' | grep 'tcp' | grep ":${connectiong_port}" | awk '{print $5}' | sort -u)"
+	if [ ! -n "${connectiong_ips}" ]; then
+		connectiong_ips_number=0
+	else
+		connectiong_ips_number="$(echo -e "${connectiong_ips}" | wc -l)"
+	fi
+	clear
+	echo -e "${info_font}目前共有 ${connectiong_ips_number} 位用户连接到了此MTProtoProxy。"
+	if [ "${connectiong_ips_number}" -gt "0" ]; then
+		echo -e "\n${info_font}连接IP如下："
+		for((count_number = "${connectiong_ips_number}"; count_number >= 1; count_number--))
+		do
+			current_ip="$(echo "${connectiong_ips}" |sed -n "$count_number"p)"
+			current_ip_address="$(wget -qO- -t1 -T2 http://freeapi.ipip.net/${current_ip}|sed 's/\"//g;s/,//g;s/\[//g;s/\]//g')"
+			echo -e "${green_backgroundcolor}[${current_ip_address}]${connectiong_ips_with_port}${default_fontcolor}"
+			sleep 1
+		done
+	fi
+}
+
+function banned_ip(){
+	clear
+	stty erase '^H' && read -r -p "请输入欲封禁的IP地址[IPv4/IPv6]：" wanna_banned_ip
+	if [ "${wanna_banned_ip}" != "${wanna_banned_ip#*[0-9].[0-9]}" ]; then
+		wanna_banned_ip_type="IPv4"
+	elif [ "${wanna_banned_ip}" != "${wanna_banned_ip#*:[0-9a-fA-F]}" ]; then
+		wanna_banned_ip_type="IPv6"
+	else
+		clear
+		echo -e "IP地址不正确，请检查无误后再试。"
+		exit 1
+	fi
+	clear
+	echo -e "${info_font}封禁说明：1.禁止该IP访问所有端口 2.仅禁止该IP访问当前端口"
+	stty erase '^H' && read -r -p "请输入禁止类型(1/2，默认：2)：" wanna_banned_type
+	if [ ! -n "${wanna_banned_type}" ]; then
+		wanna_banned_type=2
+	fi
+	if [ "${wanna_banned_type}" == "1" ]; then
+		if [ "${System_OS}" == "CentOS" ] && [ "${OS_Version}" == "7" ]; then
+			if [ "${wanna_banned_ip}" != "${wanna_banned_ip#*[0-9].[0-9]}" ]; then
+				firewall-cmd --permanent --add-rich-rule="rule family='ipv4' source address='${wanna_banned_ip}' reject"
+				if [[ $? -eq 0 ]];then
+					clear
+					echo -e "${ok_font}禁止 ${wanna_banned_ip}访问所有端口 请求成功。"
+				else
+					clear
+					echo -e "${error_font}禁止 ${wanna_banned_ip}访问所有端口 请求失败！"
+					exit 1
+				fi
+				firewall-cmd --complete-reload
+				if [[ $? -eq 0 ]];then
+					clear
+					echo -e "${ok_font}重载firewalld规则成功。"
+				else
+					clear
+					echo -e "${error_font}重载firewalld规则失败！"
+					exit 1
+				fi
+				if [ -n "$(iptables -L -n | grep "${wanna_banned_ip}" | grep "DROP" | grep "all")" ]; then
+					clear
+					echo -e "${ok_font}禁止 ${wanna_banned_ip}访问所有端口 成功。"
+				else
+					clear
+					echo -e "${error_font}禁止 ${wanna_banned_ip}访问所有端口 失败。"
+					exit 1
+				fi
+			elif [ "${wanna_banned_ip}" != "${wanna_banned_ip#*:[0-9a-fA-F]}" ]; then
+				firewall-cmd --permanent --add-rich-rule="rule family='ipv6' source address='${wanna_banned_ip}' reject"
+				if [[ $? -eq 0 ]];then
+					clear
+					echo -e "${ok_font}禁止 ${wanna_banned_ip}访问所有端口 请求成功。"
+				else
+					clear
+					echo -e "${error_font}禁止 ${wanna_banned_ip}访问所有端口 请求失败！"
+					exit 1
+				fi
+				firewall-cmd --complete-reload
+				if [[ $? -eq 0 ]];then
+					clear
+					echo -e "${ok_font}重载firewalld规则成功。"
+				else
+					clear
+					echo -e "${error_font}重载firewalld规则失败！"
+					exit 1
+				fi
+				if [ -n "$(iptables -L -n | grep "${wanna_banned_ip}" | grep "DROP" | grep "all")" ]; then
+					clear
+					echo -e "${ok_font}禁止 ${wanna_banned_ip}访问所有端口 成功。"
+				else
+					clear
+					echo -e "${error_font}禁止 ${wanna_banned_ip}访问所有端口 失败。"
+					exit 1
+				fi
+			else
+				clear
+				echo -e "IP地址不正确，请检查无误后再试。"
+				exit 1
+			fi
+		elif [ "${System_OS}" == "CentOS" ] && [ "${OS_Version}" == "5" ] || [ "${OS_Version}" == "6" ]; then
+			service iptables save
+			if [[ $? -eq 0 ]];then
+				clear
+				echo -e "${ok_font}保存当前iptables规则成功。"
+			else
+				clear
+				echo -e "${warning_font}保存当前iptables规则失败！"
+			fi
+			iptables -I INPUT -s "${wanna_banned_ip}" -j DROP
+			if [[ $? -eq 0 ]];then
+				clear
+				echo -e "${ok_font}禁止 ${wanna_banned_ip}访问所有端口 请求成功。"
+			else
+				clear
+				echo -e "${error_font}禁止 ${wanna_banned_ip}访问所有端口 请求失败！"
+				exit 1
+			fi
+			service iptables save
+			if [[ $? -eq 0 ]];then
+				clear
+				echo -e "${ok_font}保存iptables规则成功。"
+			else
+				clear
+				echo -e "${warning_font}保存iptables规则失败！"
+			fi
+			if [ -n "$(iptables -L -n | grep "${wanna_banned_ip}" | grep "DROP" | grep "all")" ]; then
+				clear
+				echo -e "${ok_font}禁止 ${wanna_banned_ip}访问所有端口 成功。"
+			else
+				clear
+				echo -e "${error_font}禁止 ${wanna_banned_ip}访问所有端口 失败。"
+				exit 1
+			fi
+		elif [[ ${System_OS} =~ ^Debian$|^Ubuntu$ ]];then
+			iptables-save > /etc/iptables.up.rules
+			if [[ $? -eq 0 ]];then
+				clear
+				echo -e "${ok_font}保存当前iptables规则成功。"
+			else
+				clear
+				echo -e "${warning_font}保存当前iptables规则失败！"
+			fi
+			echo -e '#!/bin/bash\n/sbin/iptables-restore < /etc/iptables.up.rules' > /etc/network/if-pre-up.d/iptables
+			if [[ $? -eq 0 ]];then
+				clear
+				echo -e "${ok_font}配置iptables启动规则成功。"
+			else
+				clear
+				echo -e "${error_font}配置iptables启动规则失败！"
+				exit 1
+			fi
+			chmod +x /etc/network/if-pre-up.d/iptables
+			if [[ $? -eq 0 ]];then
+				clear
+				echo -e "${ok_font}设置iptables启动文件执行权限成功。"
+			else
+				clear
+				echo -e "${error_font}设置iptables启动文件执行权限失败！"
+				exit 1
+			fi
+			iptables-restore < /etc/iptables.up.rules
+			if [[ $? -eq 0 ]];then
+				clear
+				echo -e "${ok_font}导入iptables规则成功。"
+			else
+				clear
+				echo -e "${error_font}导入iptables规则失败！"
+				exit 1
+			fi
+			iptables -I INPUT -s "${wanna_banned_ip}" -j DROP
+			if [[ $? -eq 0 ]];then
+				clear
+				echo -e "${ok_font}禁止 ${wanna_banned_ip}访问所有端口 请求成功。"
+			else
+				clear
+				echo -e "${error_font}禁止 ${wanna_banned_ip}访问所有端口 请求失败！"
+				exit 1
+			fi
+			iptables-save > /etc/iptables.up.rules
+			if [[ $? -eq 0 ]];then
+				clear
+				echo -e "${ok_font}保存iptables规则成功。"
+			else
+				clear
+				echo -e "${warning_font}保存iptables规则失败！"
+			fi
+			if [ -n "$(iptables -L -n | grep "${wanna_banned_ip}" | grep "DROP" | grep "all")" ]; then
+				clear
+				echo -e "${ok_font}禁止 ${wanna_banned_ip}访问所有端口 成功。"
+			else
+				clear
+				echo -e "${error_font}禁止 ${wanna_banned_ip}访问所有端口 失败。"
+				exit 1
+			fi
+		else
+			clear
+			echo -e "${error_font}目前暂不支持您使用的操作系统。"
+			exit 1
+		fi
+	elif [ "${wanna_banned_type}" == "2" ]; then
+		wanna_banned_port="$(cat /usr/local/mtprotoproxy/config.py | grep "PORT = " | awk -F "PORT = " '{print $2}')"
+		if [ ! -n "${wanna_banned_port}" ]; then
+			wanna_banned_port="$(cat "/usr/local/mtproto/install_port.txt")"
+		fi
+		if [ "${System_OS}" == "CentOS" ] && [ "${OS_Version}" == "7" ]; then
+			if [ "${wanna_banned_ip}" != "${wanna_banned_ip#*[0-9].[0-9]}" ]; then
+				firewall-cmd --permanent --add-rich-rule="rule family='ipv4' source address='${wanna_banned_ip}' port port='${wanna_banned_port}' protocol=tcp reject"
+				if [[ $? -eq 0 ]];then
+					clear
+					echo -e "${ok_font}禁止${wanna_banned_ip}访问 ${wanna_banned_port}端口tcp协议 请求成功。"
+				else
+					clear
+					echo -e "${error_font}禁止${wanna_banned_ip}访问 ${wanna_banned_port}端口tcp协议 请求失败！"
+					exit 1
+				fi
+				firewall-cmd --complete-reload
+				if [[ $? -eq 0 ]];then
+					clear
+					echo -e "${ok_font}重载firewalld规则成功。"
+				else
+					clear
+					echo -e "${error_font}重载firewalld规则失败！"
+					exit 1
+				fi
+				if [ -n "$(iptables -L -n | grep "${wanna_banned_ip}" | grep "DROP" | grep "tcp")" ]; then
+					clear
+					echo -e "${ok_font}禁止${wanna_banned_ip}访问 ${wanna_banned_port}端口tcp协议 成功。"
+				else
+					clear
+					echo -e "${error_font}禁止${wanna_banned_ip}访问 ${wanna_banned_port}端口tcp协议 失败。"
+					exit 1
+				fi
+			elif [ "${wanna_banned_ip}" != "${wanna_banned_ip#*:[0-9a-fA-F]}" ]; then
+				firewall-cmd --permanent --add-rich-rule="rule family='ipv4' source address='${wanna_banned_ip}' port port='${wanna_banned_port}' protocol=tcp reject"
+				if [[ $? -eq 0 ]];then
+					clear
+					echo -e "${ok_font}禁止${wanna_banned_ip}访问 ${wanna_banned_port}端口tcp协议 请求成功。"
+				else
+					clear
+					echo -e "${error_font}禁止${wanna_banned_ip}访问 ${wanna_banned_port}端口tcp协议 请求失败！"
+					exit 1
+				fi
+				firewall-cmd --complete-reload
+				if [[ $? -eq 0 ]];then
+					clear
+					echo -e "${ok_font}重载firewalld规则成功。"
+				else
+					clear
+					echo -e "${error_font}重载firewalld规则失败！"
+					exit 1
+				fi
+				if [ -n "$(iptables -L -n | grep "${wanna_banned_ip}" | grep "${wanna_banned_port}" | grep "DROP" | grep "tcp")" ]; then
+					clear
+					echo -e "${ok_font}禁止${wanna_banned_ip}访问 ${wanna_banned_port}端口tcp协议 成功。"
+				else
+					clear
+					echo -e "${error_font}禁止${wanna_banned_ip}访问 ${wanna_banned_port}端口tcp协议 失败。"
+					exit 1
+				fi
+			else
+				clear
+				echo -e "IP地址不正确，请检查无误后再试。"
+				exit 1
+			fi
+		elif [ "${System_OS}" == "CentOS" ] && [ "${OS_Version}" == "5" ] || [ "${OS_Version}" == "6" ]; then
+			service iptables save
+			if [[ $? -eq 0 ]];then
+				clear
+				echo -e "${ok_font}保存当前iptables规则成功。"
+			else
+				clear
+				echo -e "${warning_font}保存当前iptables规则失败！"
+			fi
+			iptables -I INPUT -s "${wanna_banned_ip}" -p tcp --dport "${wanna_banned_port}" -j DROP
+			if [[ $? -eq 0 ]];then
+				clear
+				echo -e "${ok_font}禁止${wanna_banned_ip}访问 ${wanna_banned_port}端口tcp协议 请求成功。"
+			else
+				clear
+				echo -e "${error_font}禁止${wanna_banned_ip}访问 ${wanna_banned_port}端口tcp协议 请求失败！"
+				exit 1
+			fi
+			service iptables save
+			if [[ $? -eq 0 ]];then
+				clear
+				echo -e "${ok_font}保存iptables规则成功。"
+			else
+				clear
+				echo -e "${warning_font}保存iptables规则失败！"
+			fi
+			if [ -n "$(iptables -L -n | grep "${wanna_banned_ip}" | grep "${wanna_banned_port}" | grep "DROP" | grep "tcp")" ]; then
+				clear
+				echo -e "${ok_font}禁止${wanna_banned_ip}访问 ${wanna_banned_port}端口tcp协议 成功。"
+			else
+				clear
+				echo -e "${error_font}禁止${wanna_banned_ip}访问 ${wanna_banned_port}端口tcp协议 失败。"
+				exit 1
+			fi
+		elif [[ ${System_OS} =~ ^Debian$|^Ubuntu$ ]];then
+			iptables-save > /etc/iptables.up.rules
+			if [[ $? -eq 0 ]];then
+				clear
+				echo -e "${ok_font}保存当前iptables规则成功。"
+			else
+				clear
+				echo -e "${warning_font}保存当前iptables规则失败！"
+			fi
+			echo -e '#!/bin/bash\n/sbin/iptables-restore < /etc/iptables.up.rules' > /etc/network/if-pre-up.d/iptables
+			if [[ $? -eq 0 ]];then
+				clear
+				echo -e "${ok_font}配置iptables启动规则成功。"
+			else
+				clear
+				echo -e "${error_font}配置iptables启动规则失败！"
+				exit 1
+			fi
+			chmod +x /etc/network/if-pre-up.d/iptables
+			if [[ $? -eq 0 ]];then
+				clear
+				echo -e "${ok_font}设置iptables启动文件执行权限成功。"
+			else
+				clear
+				echo -e "${error_font}设置iptables启动文件执行权限失败！"
+				exit 1
+			fi
+			iptables-restore < /etc/iptables.up.rules
+			if [[ $? -eq 0 ]];then
+				clear
+				echo -e "${ok_font}导入iptables规则成功。"
+			else
+				clear
+				echo -e "${error_font}导入iptables规则失败！"
+				exit 1
+			fi
+			iptables -I INPUT -s "${wanna_banned_ip}" -p tcp --dport "${wanna_banned_port}" -j DROP
+			if [[ $? -eq 0 ]];then
+				clear
+				echo -e "${ok_font}禁止${wanna_banned_ip}访问 ${wanna_banned_port}端口tcp协议 请求成功。"
+			else
+				clear
+				echo -e "${error_font}禁止${wanna_banned_ip}访问 ${wanna_banned_port}端口tcp协议 请求失败！"
+				exit 1
+			fi
+			iptables-save > /etc/iptables.up.rules
+			if [[ $? -eq 0 ]];then
+				clear
+				echo -e "${ok_font}保存iptables规则成功。"
+			else
+				clear
+				echo -e "${warning_font}保存iptables规则失败！"
+			fi
+			if [ -n "$(iptables -L -n | grep "${wanna_banned_ip}" | grep "${wanna_banned_port}" | grep "DROP" | grep "tcp")" ]; then
+				clear
+				echo -e "${ok_font}禁止${wanna_banned_ip}访问 ${wanna_banned_port}端口tcp协议 成功。"
+			else
+				clear
+				echo -e "${error_font}禁止${wanna_banned_ip}访问 ${wanna_banned_port}端口tcp协议 失败。"
+				exit 1
+			fi
+		else
+			clear
+			echo -e "${error_font}目前暂不支持您使用的操作系统。"
+			exit 1
+		fi
+	fi
+}
+
+function unbanned_ip(){
+	clear
+	stty erase '^H' && read -r -p "请输入欲解封的IP地址[IPv4/IPv6]：" wanna_banned_ip
+	if [ "${wanna_banned_ip}" != "${wanna_banned_ip#*[0-9].[0-9]}" ]; then
+		wanna_banned_ip_type="IPv4"
+	elif [ "${wanna_banned_ip}" != "${wanna_banned_ip#*:[0-9a-fA-F]}" ]; then
+		wanna_banned_ip_type="IPv6"
+	else
+		clear
+		echo -e "IP地址不正确，请检查无误后再试。"
+		exit 1
+	fi
+	clear
+	echo -e "${info_font}解禁说明：1.解禁该IP访问所有端口 2.仅解禁该IP访问当前端口"
+	stty erase '^H' && read -r -p "请输入禁止类型(1/2，默认：2)：" wanna_banned_type
+	if [ ! -n "${wanna_banned_type}" ]; then
+		wanna_banned_type=2
+	fi
+	if [ "${wanna_banned_type}" == "1" ]; then
+		if [ "${System_OS}" == "CentOS" ] && [ "${OS_Version}" == "7" ]; then
+			if [ "${wanna_banned_ip}" != "${wanna_banned_ip#*[0-9].[0-9]}" ]; then
+				firewall-cmd --permanent --remove-rich-rule="rule family='ipv4' source address='${wanna_banned_ip}' reject"
+				if [[ $? -eq 0 ]];then
+					clear
+					echo -e "${ok_font}解禁 ${wanna_banned_ip}访问所有端口 请求成功。"
+				else
+					clear
+					echo -e "${error_font}解禁 ${wanna_banned_ip}访问所有端口 请求失败！"
+					exit 1
+				fi
+				firewall-cmd --complete-reload
+				if [[ $? -eq 0 ]];then
+					clear
+					echo -e "${ok_font}重载firewalld规则成功。"
+				else
+					clear
+					echo -e "${error_font}重载firewalld规则失败！"
+					exit 1
+				fi
+				if [ ! -n "$(iptables -L -n | grep "${wanna_banned_ip}" | grep "DROP" | grep "all")" ]; then
+					clear
+					echo -e "${ok_font}解禁 ${wanna_banned_ip}访问所有端口 成功。"
+				else
+					clear
+					echo -e "${error_font}解禁 ${wanna_banned_ip}访问所有端口 失败。"
+					exit 1
+				fi
+			elif [ "${wanna_banned_ip}" != "${wanna_banned_ip#*:[0-9a-fA-F]}" ]; then
+				firewall-cmd --permanent --remove-rich-rule="rule family='ipv6' source address='${wanna_banned_ip}' reject"
+				if [[ $? -eq 0 ]];then
+					clear
+					echo -e "${ok_font}解禁 ${wanna_banned_ip}访问所有端口 请求成功。"
+				else
+					clear
+					echo -e "${error_font}解禁 ${wanna_banned_ip}访问所有端口 请求失败！"
+					exit 1
+				fi
+				firewall-cmd --complete-reload
+				if [[ $? -eq 0 ]];then
+					clear
+					echo -e "${ok_font}重载firewalld规则成功。"
+				else
+					clear
+					echo -e "${error_font}重载firewalld规则失败！"
+					exit 1
+				fi
+				if [ ! -n "$(iptables -L -n | grep "${wanna_banned_ip}" | grep "DROP" | grep "all")" ]; then
+					clear
+					echo -e "${ok_font}解禁 ${wanna_banned_ip}访问所有端口 成功。"
+				else
+					clear
+					echo -e "${error_font}解禁 ${wanna_banned_ip}访问所有端口 失败。"
+					exit 1
+				fi
+			else
+				clear
+				echo -e "IP地址不正确，请检查无误后再试。"
+				exit 1
+			fi
+		elif [ "${System_OS}" == "CentOS" ] && [ "${OS_Version}" == "5" ] || [ "${OS_Version}" == "6" ]; then
+			service iptables save
+			if [[ $? -eq 0 ]];then
+				clear
+				echo -e "${ok_font}保存当前iptables规则成功。"
+			else
+				clear
+				echo -e "${warning_font}保存当前iptables规则失败！"
+			fi
+			iptables -D INPUT -s "${wanna_banned_ip}" -j DROP
+			if [[ $? -eq 0 ]];then
+				clear
+				echo -e "${ok_font}解禁 ${wanna_banned_ip}访问所有端口 请求成功。"
+			else
+				clear
+				echo -e "${error_font}解禁 ${wanna_banned_ip}访问所有端口 请求失败！"
+				exit 1
+			fi
+			service iptables save
+			if [[ $? -eq 0 ]];then
+				clear
+				echo -e "${ok_font}保存iptables规则成功。"
+			else
+				clear
+				echo -e "${warning_font}保存iptables规则失败！"
+			fi
+			if [ ! -n "$(iptables -L -n | grep "${wanna_banned_ip}" | grep "DROP" | grep "all")" ]; then
+				clear
+				echo -e "${ok_font}解禁 ${wanna_banned_ip}访问所有端口 成功。"
+			else
+				clear
+				echo -e "${error_font}解禁 ${wanna_banned_ip}访问所有端口 失败。"
+				exit 1
+			fi
+		elif [[ ${System_OS} =~ ^Debian$|^Ubuntu$ ]];then
+			iptables-save > /etc/iptables.up.rules
+			if [[ $? -eq 0 ]];then
+				clear
+				echo -e "${ok_font}保存当前iptables规则成功。"
+			else
+				clear
+				echo -e "${warning_font}保存当前iptables规则失败！"
+			fi
+			echo -e '#!/bin/bash\n/sbin/iptables-restore < /etc/iptables.up.rules' > /etc/network/if-pre-up.d/iptables
+			if [[ $? -eq 0 ]];then
+				clear
+				echo -e "${ok_font}配置iptables启动规则成功。"
+			else
+				clear
+				echo -e "${error_font}配置iptables启动规则失败！"
+				exit 1
+			fi
+			chmod +x /etc/network/if-pre-up.d/iptables
+			if [[ $? -eq 0 ]];then
+				clear
+				echo -e "${ok_font}设置iptables启动文件执行权限成功。"
+			else
+				clear
+				echo -e "${error_font}设置iptables启动文件执行权限失败！"
+				exit 1
+			fi
+			iptables-restore < /etc/iptables.up.rules
+			if [[ $? -eq 0 ]];then
+				clear
+				echo -e "${ok_font}导入iptables规则成功。"
+			else
+				clear
+				echo -e "${error_font}导入iptables规则失败！"
+				exit 1
+			fi
+			iptables -D INPUT -s "${wanna_banned_ip}" -j DROP
+			if [[ $? -eq 0 ]];then
+				clear
+				echo -e "${ok_font}解禁 ${wanna_banned_ip}访问所有端口 请求成功。"
+			else
+				clear
+				echo -e "${error_font}解禁 ${wanna_banned_ip}访问所有端口 请求失败！"
+				exit 1
+			fi
+			iptables-save > /etc/iptables.up.rules
+			if [[ $? -eq 0 ]];then
+				clear
+				echo -e "${ok_font}保存iptables规则成功。"
+			else
+				clear
+				echo -e "${warning_font}保存iptables规则失败！"
+			fi
+			if [ ! -n "$(iptables -L -n | grep "${wanna_banned_ip}" | grep "DROP" | grep "all")" ]; then
+				clear
+				echo -e "${ok_font}解禁 ${wanna_banned_ip}访问所有端口 成功。"
+			else
+				clear
+				echo -e "${error_font}解禁 ${wanna_banned_ip}访问所有端口 失败。"
+				exit 1
+			fi
+		else
+			clear
+			echo -e "${error_font}目前暂不支持您使用的操作系统。"
+			exit 1
+		fi
+	elif [ "${wanna_banned_type}" == "2" ]; then
+		wanna_banned_port="$(cat /usr/local/mtprotoproxy/config.py | grep "PORT = " | awk -F "PORT = " '{print $2}')"
+		if [ ! -n "${wanna_banned_port}" ]; then
+			wanna_banned_port="$(cat "/usr/local/mtproto/install_port.txt")"
+		fi
+		if [ "${System_OS}" == "CentOS" ] && [ "${OS_Version}" == "7" ]; then
+			if [ "${wanna_banned_ip}" != "${wanna_banned_ip#*[0-9].[0-9]}" ]; then
+				firewall-cmd --permanent --remove-rich-rule="rule family='ipv4' source address='${wanna_banned_ip}' port port='${wanna_banned_port}' protocol=tcp reject"
+				if [[ $? -eq 0 ]];then
+					clear
+					echo -e "${ok_font}解禁${wanna_banned_ip}访问 ${wanna_banned_port}端口tcp协议 请求成功。"
+				else
+					clear
+					echo -e "${error_font}解禁${wanna_banned_ip}访问 ${wanna_banned_port}端口tcp协议 请求失败！"
+					exit 1
+				fi
+				firewall-cmd --complete-reload
+				if [[ $? -eq 0 ]];then
+					clear
+					echo -e "${ok_font}重载firewalld规则成功。"
+				else
+					clear
+					echo -e "${error_font}重载firewalld规则失败！"
+					exit 1
+				fi
+				if [ ! -n "$(iptables -L -n | grep "${wanna_banned_ip}" | grep "DROP" | grep "tcp")" ]; then
+					clear
+					echo -e "${ok_font}解禁${wanna_banned_ip}访问 ${wanna_banned_port}端口tcp协议 成功。"
+				else
+					clear
+					echo -e "${error_font}解禁${wanna_banned_ip}访问 ${wanna_banned_port}端口tcp协议 失败。"
+					exit 1
+				fi
+			elif [ "${wanna_banned_ip}" != "${wanna_banned_ip#*:[0-9a-fA-F]}" ]; then
+				firewall-cmd --permanent --remove-rich-rule="rule family='ipv4' source address='${wanna_banned_ip}' port port='${wanna_banned_port}' protocol=tcp reject"
+				if [[ $? -eq 0 ]];then
+					clear
+					echo -e "${ok_font}解禁${wanna_banned_ip}访问 ${wanna_banned_port}端口tcp协议 请求成功。"
+				else
+					clear
+					echo -e "${error_font}解禁${wanna_banned_ip}访问 ${wanna_banned_port}端口tcp协议 请求失败！"
+					exit 1
+				fi
+				firewall-cmd --complete-reload
+				if [[ $? -eq 0 ]];then
+					clear
+					echo -e "${ok_font}重载firewalld规则成功。"
+				else
+					clear
+					echo -e "${error_font}重载firewalld规则失败！"
+					exit 1
+				fi
+				if [ ! -n "$(iptables -L -n | grep "${wanna_banned_ip}" | grep "${wanna_banned_port}" | grep "DROP" | grep "tcp")" ]; then
+					clear
+					echo -e "${ok_font}解禁${wanna_banned_ip}访问 ${wanna_banned_port}端口tcp协议 成功。"
+				else
+					clear
+					echo -e "${error_font}解禁${wanna_banned_ip}访问 ${wanna_banned_port}端口tcp协议 失败。"
+					exit 1
+				fi
+			else
+				clear
+				echo -e "IP地址不正确，请检查无误后再试。"
+				exit 1
+			fi
+		elif [ "${System_OS}" == "CentOS" ] && [ "${OS_Version}" == "5" ] || [ "${OS_Version}" == "6" ]; then
+			service iptables save
+			if [[ $? -eq 0 ]];then
+				clear
+				echo -e "${ok_font}保存当前iptables规则成功。"
+			else
+				clear
+				echo -e "${warning_font}保存当前iptables规则失败！"
+			fi
+			iptables -D INPUT -s "${wanna_banned_ip}" -p tcp --dport "${wanna_banned_port}" -j DROP
+			if [[ $? -eq 0 ]];then
+				clear
+				echo -e "${ok_font}解禁${wanna_banned_ip}访问 ${wanna_banned_port}端口tcp协议 请求成功。"
+			else
+				clear
+				echo -e "${error_font}解禁${wanna_banned_ip}访问 ${wanna_banned_port}端口tcp协议 请求失败！"
+				exit 1
+			fi
+			service iptables save
+			if [[ $? -eq 0 ]];then
+				clear
+				echo -e "${ok_font}保存iptables规则成功。"
+			else
+				clear
+				echo -e "${warning_font}保存iptables规则失败！"
+			fi
+			if [ ! -n "$(iptables -L -n | grep "${wanna_banned_ip}" | grep "${wanna_banned_port}" | grep "DROP" | grep "tcp")" ]; then
+				clear
+				echo -e "${ok_font}解禁${wanna_banned_ip}访问 ${wanna_banned_port}端口tcp协议 成功。"
+			else
+				clear
+				echo -e "${error_font}解禁${wanna_banned_ip}访问 ${wanna_banned_port}端口tcp协议 失败。"
+				exit 1
+			fi
+		elif [[ ${System_OS} =~ ^Debian$|^Ubuntu$ ]];then
+			iptables-save > /etc/iptables.up.rules
+			if [[ $? -eq 0 ]];then
+				clear
+				echo -e "${ok_font}保存当前iptables规则成功。"
+			else
+				clear
+				echo -e "${warning_font}保存当前iptables规则失败！"
+			fi
+			echo -e '#!/bin/bash\n/sbin/iptables-restore < /etc/iptables.up.rules' > /etc/network/if-pre-up.d/iptables
+			if [[ $? -eq 0 ]];then
+				clear
+				echo -e "${ok_font}配置iptables启动规则成功。"
+			else
+				clear
+				echo -e "${error_font}配置iptables启动规则失败！"
+				exit 1
+			fi
+			chmod +x /etc/network/if-pre-up.d/iptables
+			if [[ $? -eq 0 ]];then
+				clear
+				echo -e "${ok_font}设置iptables启动文件执行权限成功。"
+			else
+				clear
+				echo -e "${error_font}设置iptables启动文件执行权限失败！"
+				exit 1
+			fi
+			iptables-restore < /etc/iptables.up.rules
+			if [[ $? -eq 0 ]];then
+				clear
+				echo -e "${ok_font}导入iptables规则成功。"
+			else
+				clear
+				echo -e "${error_font}导入iptables规则失败！"
+				exit 1
+			fi
+			iptables -D INPUT -s "${wanna_banned_ip}" -p tcp --dport "${wanna_banned_port}" -j DROP
+			if [[ $? -eq 0 ]];then
+				clear
+				echo -e "${ok_font}解禁${wanna_banned_ip}访问 ${wanna_banned_port}端口tcp协议 请求成功。"
+			else
+				clear
+				echo -e "${error_font}解禁${wanna_banned_ip}访问 ${wanna_banned_port}端口tcp协议 请求失败！"
+				exit 1
+			fi
+			iptables-save > /etc/iptables.up.rules
+			if [[ $? -eq 0 ]];then
+				clear
+				echo -e "${ok_font}保存iptables规则成功。"
+			else
+				clear
+				echo -e "${warning_font}保存iptables规则失败！"
+			fi
+			if [ ! -n "$(iptables -L -n | grep "${wanna_banned_ip}" | grep "${wanna_banned_port}" | grep "DROP" | grep "tcp")" ]; then
+				clear
+				echo -e "${ok_font}解禁${wanna_banned_ip}访问 ${wanna_banned_port}端口tcp协议 成功。"
+			else
+				clear
+				echo -e "${error_font}解禁${wanna_banned_ip}访问 ${wanna_banned_port}端口tcp协议 失败。"
+				exit 1
+			fi
+		else
+			clear
+			echo -e "${error_font}目前暂不支持您使用的操作系统。"
+			exit 1
 		fi
 	fi
 }
@@ -1155,12 +1888,12 @@ function make_python_for_centos5(){
 function generate_base_config(){
 	clear
 	echo "正在生成基础信息中..."
-	Address="$(curl -4 https://api.ip.sb/ip)"
+	Address="$(wget -qO- -t1 -T2 -4 https://api.ip.sb/ip)"
 	if [ ! -n "${Address}" ]; then
-		Address="$(curl https://ipinfo.io/ip)"
+		Address="$(wget -qO- -t1 -T2 https://ipinfo.io/ip)"
 	fi
 	if [ ! -n "${Address}" ]; then
-		Address="$(curl http://members.3322.org/dyndns/getip)"
+		Address="$(wget -qO- -t1 -T2 http://members.3322.org/dyndns/getip)"
 	fi
 	if [ ! -n "${Address}" ]; then
 		clear
@@ -1262,14 +1995,6 @@ function open_port(){
 			clear_install
 			exit 1
 		fi
-		firewall-cmd --permanent --zone=public --add-port="${install_port}"/udp
-		if [[ $? -eq 0 ]];then
-			clear
-			echo -e "${ok_font}开放 ${install_port}端口udp协议 请求成功。"
-		else
-			clear
-			echo -e "${warning_font}开放 ${install_port}端口udp协议 请求失败！"
-		fi
 		firewall-cmd --complete-reload
 		if [[ $? -eq 0 ]];then
 			clear
@@ -1291,13 +2016,6 @@ function open_port(){
 			clear_install
 			exit 1
 		fi
-		if [ "$(firewall-cmd --query-port="${install_port}"/udp)" == "yes" ]; then
-			clear
-			echo -e "${ok_font}开放 ${install_port}端口udp协议 成功。"
-		else
-			clear
-			echo -e "${warning_font}开放 ${install_port}端口udp协议 失败！"
-		fi
 	elif [ "${System_OS}" == "CentOS" ] && [ "${OS_Version}" == "5" ] || [ "${OS_Version}" == "6" ]; then
 		service iptables save
 		if [[ $? -eq 0 ]];then
@@ -1317,14 +2035,6 @@ function open_port(){
 			clear_install_reason="开放 ${install_port}端口tcp协议 请求失败。"
 			clear_install
 			exit 1
-		fi
-		iptables -I INPUT -m state --state NEW -m udp -p udp --dport "${install_port}" -j ACCEPT
-		if [[ $? -eq 0 ]];then
-			clear
-			echo -e "${ok_font}开放 ${install_port}端口udp协议 请求成功。"
-		else
-			clear
-			echo -e "${warning_font}开放 ${install_port}端口udp协议 请求失败！"
 		fi
 		service iptables save
 		if [[ $? -eq 0 ]];then
@@ -1358,13 +2068,6 @@ function open_port(){
 			clear_install
 			exit 1
 		fi
-		if [ -n "$(iptables -L -n | grep ACCEPT | grep udp |grep "${install_port}")" ]; then
-			clear
-			echo -e "${ok_font}开放 ${install_port}端口udp协议 成功。"
-		else
-			clear
-			echo -e "${warning_font}开放 ${install_port}端口udp协议 失败！"
-		fi
 	elif [[ ${System_OS} =~ ^Debian$|^Ubuntu$ ]];then
 		iptables-save > /etc/iptables.up.rules
 		if [[ $? -eq 0 ]];then
@@ -1421,14 +2124,6 @@ function open_port(){
 			clear_install
 			exit 1
 		fi
-		iptables -I INPUT -m state --state NEW -m udp -p udp --dport "${install_port}" -j ACCEPT
-		if [[ $? -eq 0 ]];then
-			clear
-			echo -e "${ok_font}开放 ${install_port}端口udp协议 请求成功。"
-		else
-			clear
-			echo -e "${warning_font}开放 ${install_port}端口udp协议 请求失败！"
-		fi
 		iptables-save > /etc/iptables.up.rules
 		if [[ $? -eq 0 ]];then
 			clear
@@ -1450,13 +2145,6 @@ function open_port(){
 			clear_install
 			exit 1
 		fi
-		if [ -n "$(iptables -L -n | grep ACCEPT | grep udp |grep "${install_port}")" ]; then
-			clear
-			echo -e "${ok_font}开放 ${install_port}端口udp协议 成功。"
-		else
-			clear
-			echo -e "${warning_font}开放 ${install_port}端口udp协议 失败！"
-		fi
 	else
 		clear
 		echo -e "${error_font}目前暂不支持您使用的操作系统。"
@@ -1464,14 +2152,16 @@ function open_port(){
 		clear_install
 		exit 1
 	fi
+	clear
+	echo -e "${ok_font}防火墙配置完毕。"
 }
 
 function close_port(){
 	clear
 	echo -e "正在设置防火墙中..."
-	uninstall_port=$(cat "/usr/local/mtprotoproxy/config.py" | grep "PORT = " | awk -F "PORT = " '{print $2}')
+	uninstall_port="$(cat "/usr/local/mtprotoproxy/config.py" | grep "PORT = " | awk -F "PORT = " '{print $2}')"
 	if [ ! -n "${uninstall_port}" ]; then
-		uninstall_port=$(cat "/usr/local/mtproto/install_port.txt")
+		uninstall_port="$(cat "/usr/local/mtproto/install_port.txt")"
 	fi
 	if [ "${System_OS}" == "CentOS" ] && [ "${OS_Version}" == "7" ]; then
 		firewall-cmd --permanent --zone=public --remove-port="${uninstall_port}"/tcp
@@ -1481,14 +2171,6 @@ function close_port(){
 		else
 			clear
 			echo -e "${error_font}关闭 ${uninstall_port}端口tcp协议 请求失败！"
-		fi
-		firewall-cmd --permanent --zone=public --remove-port="${uninstall_port}"/udp
-		if [[ $? -eq 0 ]];then
-			clear
-			echo -e "${ok_font}关闭 ${uninstall_port}端口udp协议 请求成功。"
-		else
-			clear
-			echo -e "${warning_font}关闭 ${uninstall_port}端口udp协议 请求失败！"
 		fi
 		firewall-cmd --complete-reload
 		if [[ $? -eq 0 ]];then
@@ -1504,13 +2186,6 @@ function close_port(){
 		else
 			clear
 			echo -e "${error_font}关闭 ${uninstall_port}端口tcp协议 失败！"
-		fi
-		if [ "$(firewall-cmd --query-port="${uninstall_port}"/udp)" == "no" ]; then
-			clear
-			echo -e "${ok_font}关闭 ${uninstall_port}端口udp协议 成功。"
-		else
-			clear
-			echo -e "${warning_font}关闭 ${uninstall_port}端口udp协议 失败！"
 		fi
 	elif [ "${System_OS}" == "CentOS" ] && [ "${OS_Version}" == "5" ] || [ "${OS_Version}" == "6" ]; then
 		service iptables save
@@ -1528,14 +2203,6 @@ function close_port(){
 		else
 			clear
 			echo -e "${error_font}关闭 ${uninstall_port}端口tcp协议 请求失败！"
-		fi
-		iptables -D INPUT -m state --state NEW -m udp -p udp --dport "${uninstall_port}" -j ACCEPT
-		if [[ $? -eq 0 ]];then
-			clear
-			echo -e "${ok_font}关闭 ${uninstall_port}端口udp协议 请求成功。"
-		else
-			clear
-			echo -e "${warning_font}关闭 ${uninstall_port}端口udp协议 请求失败！"
 		fi
 		service iptables save
 		if [[ $? -eq 0 ]];then
@@ -1559,13 +2226,6 @@ function close_port(){
 		else
 			clear
 			echo -e "${error_font}关闭 ${uninstall_port}端口tcp协议 失败！"
-		fi
-		if [ ! -n "$(iptables -L -n | grep ACCEPT | grep udp |grep "${uninstall_port}")" ]; then
-			clear
-			echo -e "${ok_font}关闭 ${uninstall_port}端口udp协议 成功。"
-		else
-			clear
-			echo -e "${warning_font}关闭 ${uninstall_port}端口udp协议 失败！"
 		fi
 	elif [[ ${System_OS} =~ ^Debian$|^Ubuntu$ ]];then
 		iptables-save > /etc/iptables.up.rules
@@ -1620,14 +2280,6 @@ function close_port(){
 			clear
 			echo -e "${error_font}关闭 ${uninstall_port}端口tcp协议 请求失败！"
 		fi
-		iptables -D INPUT -m state --state NEW -m udp -p udp --dport "${uninstall_port}" -j ACCEPT
-		if [[ $? -eq 0 ]];then
-			clear
-			echo -e "${ok_font}关闭 ${uninstall_port}端口udp协议 请求成功。"
-		else
-			clear
-			echo -e "${warning_font}关闭 ${uninstall_port}端口udp协议 请求失败！"
-		fi
 		iptables-save > /etc/iptables.up.rules
 		if [[ $? -eq 0 ]];then
 			clear
@@ -1643,17 +2295,12 @@ function close_port(){
 			clear
 			echo -e "${error_font}关闭 ${uninstall_port}端口tcp协议 失败！"
 		fi
-		if [ ! -n "$(iptables -L -n | grep ACCEPT | grep udp |grep "${uninstall_port}")" ]; then
-			clear
-			echo -e "${ok_font}关闭 ${uninstall_port}端口udp协议 成功。"
-		else
-			clear
-			echo -e "${warning_font}关闭 ${uninstall_port}端口udp协议 失败！"
-		fi
 	else
 		clear
 		echo -e "${error_font}目前暂不支持您使用的操作系统。"
 	fi
+	clear
+	echo -e "${ok_font}防火墙配置完毕。"
 }
 
 function echo_mtprotoproxy_config(){
