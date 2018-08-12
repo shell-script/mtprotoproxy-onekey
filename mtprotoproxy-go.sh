@@ -132,9 +132,9 @@ function check_install_status(){
 			if [ "${connect_base_status}" == "OK" ]; then
 				connect_status="${green_fontcolor}正常连通${default_fontcolor}"
 			elif [ "${connect_base_status}" == "Port closed" ]; then
-				connect_status="${warning_font}端口未开启${default_fontcolor}"
+				connect_status="${warning_fontcolor}端口未开启${default_fontcolor}"
 			elif [ "${connect_base_status}" == "No" ]; then
-				connect_status="${error_font}无法连通${default_fontcolor}"
+				connect_status="${red_fontcolor}无法连通${default_fontcolor}"
 			else
 				connect_status="${red_fontcolor}检测失败${default_fontcolor}"
 			fi
@@ -870,6 +870,24 @@ function os_update(){
 				clear
 				echo -e "${ok_font}所需组件安装成功。"
 			fi
+			ln -s "/usr/bin/python3.6" "/usr/bin/python3"
+			if [[ $? -ne 0 ]];then
+				clear
+				echo -e "${error_font}配置Python3.6失败！"
+				exit 1
+			else
+				clear
+				echo -e "${ok_font}配置Python3.6成功。"
+			fi
+			ln -s "/usr/bin/pip3.6" "/usr/bin/pip3"
+			if [[ $? -ne 0 ]];then
+				clear
+				echo -e "${error_font}配置Python3.6-pip失败！"
+				exit 1
+			else
+				clear
+				echo -e "${ok_font}配置Python3.6-pip成功。"
+			fi
 		elif [ "${OS_Version}" == "7" ]; then
 			yum install -y wget curl unzip lsof cron daemon firewalld ca-certificates python yum-utils epel-release
 			if [[ $? -ne 0 ]];then
@@ -898,6 +916,28 @@ function os_update(){
 				clear
 				echo -e "${ok_font}所需组件安装成功。"
 			fi
+			ln -s "/usr/bin/python3.6" "/usr/bin/python3"
+			if [[ $? -ne 0 ]];then
+				clear
+				echo -e "${error_font}配置Python3.6失败！"
+				exit 1
+			else
+				clear
+				echo -e "${ok_font}配置Python3.6成功。"
+			fi
+			ln -s "/usr/bin/pip3.6" "/usr/bin/pip3"
+			if [[ $? -ne 0 ]];then
+				clear
+				echo -e "${error_font}配置Python3.6-pip失败！"
+				exit 1
+			else
+				clear
+				echo -e "${ok_font}配置Python3.6-pip成功。"
+			fi
+		else
+			clear
+			echo -e "${error_font}目前暂不支持您使用的操作系统的版本号。"
+			exit 1
 		fi
 		pip3.6 install --upgrade pip
 		if [[ $? -ne 0 ]];then
