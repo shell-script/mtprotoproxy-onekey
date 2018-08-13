@@ -1758,7 +1758,7 @@ function os_update(){
 			clear
 			echo -e "${ok_font}系统组件更新成功。"
 		fi
-		apt-get install -y wget curl unzip lsof cron daemon iptables ca-certificates python python3.5 python3-pip
+		apt-get install -y wget curl unzip lsof cron daemon iptables ca-certificates python python3 python3-pip
 		if [[ $? -ne 0 ]];then
 			clear
 			echo -e "${error_font}所需组件安装失败！"
