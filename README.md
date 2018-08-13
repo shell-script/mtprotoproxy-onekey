@@ -8,16 +8,16 @@ apt-get install -y curl && curl -O https://raw.githubusercontent.com/shell-scrip
 ```
 - - -
 # Support OS
-+ CentOS 5 **(Untested)**
-** + CentOS 6 **
-** + CentOS 7 **
-<br>
-+ Debian 7 **(Untested)**
-** + Debian 8 **
-** + Debian 9 **
-<br>
-** + Ubuntu 14.04 **
-** + Ubuntu 16.04 **
++ CentOS 5 **(Untested)**<br>
+** + CentOS 6 **<br>
+** + CentOS 7 **<br>
+<br><br>
++ Debian 7 **(Untested)**<br>
+** + Debian 8 **<br>
+** + Debian 9 **<br>
+<br><br>
+** + Ubuntu 14.04 **<br>
+** + Ubuntu 16.04 **<br>
 ** + Ubuntu 18.04 **
 - - -
 - - -
