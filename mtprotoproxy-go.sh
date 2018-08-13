@@ -1767,14 +1767,25 @@ function os_update(){
 			clear
 			echo -e "${ok_font}所需组件安装成功。"
 		fi
-		ln -f -s "/usr/bin/python3.5" "/usr/bin/python3"
-		if [[ $? -ne 0 ]];then
-			clear
-			echo -e "${error_font}配置Python3.5失败！"
-			exit 1
-		else
-			clear
-			echo -e "${ok_font}配置Python3.5成功。"
+		if [ "${System_OS}" == "Ubuntu" ]] && [ "${System_Bit}" == "14" ]; then
+			ln -f -s "/usr/bin/python3.5" "/usr/bin/python3"
+			if [[ $? -ne 0 ]];then
+				clear
+				echo -e "${error_font}配置Python3.5失败！"
+				exit 1
+			else
+				clear
+				echo -e "${ok_font}配置Python3.5成功。"
+			fi
+			ln -f -s "/usr/local/bin/pip3.5" "/usr/local/bin/pip3"
+			if [[ $? -ne 0 ]];then
+				clear
+				echo -e "${error_font}配置Python3.5失败！"
+				exit 1
+			else
+				clear
+				echo -e "${ok_font}配置Python3.5成功。"
+			fi
 		fi
 		pip3 install --upgrade pip
 		if [[ $? -ne 0 ]];then
