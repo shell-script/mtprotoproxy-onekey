@@ -181,11 +181,13 @@ MTProtoProxy当前运行状态：${mtprotoproxy_status}
 	7.重启程序
 
 	8.显示连接信息
+	9.封禁IP
+	10.解封IP
 --------------------------------------------------------------------------------------------------
 Telegram代理链接：${mtprotoproxy_use_command}
 --------------------------------------------------------------------------------------------------"
 	stty erase '^H' && read -p "请输入序号：" determine_type
-	if [[ ${determine_type} -ge 1 ]] && [[ ${determine_type} -le 8 ]]; then
+	if [[ ${determine_type} -ge 1 ]] && [[ ${determine_type} -le 10 ]]; then
 		data_processing
 	else
 		clear
