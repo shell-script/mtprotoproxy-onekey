@@ -1673,6 +1673,15 @@ function os_update(){
 				clear
 				echo -e "${ok_font}所需组件安装成功。"
 			fi
+			systemctl start firewalld
+			if [[ $? -ne 0 ]];then
+				clear
+				echo -e "${error_font}启动firewalld失败！"
+				exit 1
+			else
+				clear
+				echo -e "${ok_font}启动firewalld成功。"
+			fi
 			yum install -y "https://centos7.iuscommunity.org/ius-release.rpm"
 			if [[ $? -ne 0 ]];then
 				clear
