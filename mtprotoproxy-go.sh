@@ -307,7 +307,7 @@ function data_processing(){
 			clear
 			stty erase '^H' && read -p "请输入Secret(可空)：" install_secret
 			if [ ! -n "${install_secret}" ]; then
-				install_secret="$(head -c 16 /dev/urandom | xxd -ps)"
+				install_secret="$(head -n 512 /dev/urandom | md5sum | head -c 32)"
 			fi
 			clear
 			echo -e "${info_font}This is your mtproto proxy connection info:"
@@ -1872,6 +1872,24 @@ function make_python_for_centos5(){
 		make clean
 		rm -rf "/tmp/make_python_for_centos5"
 		exit 1
+	fi
+	ln -f -s "/usr/bin/python3.6" "/usr/bin/python3"
+	if [[ $? -ne 0 ]];then
+		clear
+		echo -e "${error_font}配置Python3.6失败！"
+		exit 1
+	else
+		clear
+		echo -e "${ok_font}配置Python3.6成功。"
+	fi
+	ln -f -s "/usr/bin/pip3.6" "/usr/bin/pip3"
+	if [[ $? -ne 0 ]];then
+		clear
+		echo -e "${error_font}配置Python3.6-pip失败！"
+		exit 1
+	else
+		clear
+		echo -e "${ok_font}配置Python3.6-pip成功。"
 	fi
 	rm -rf "/tmp/make_python_for_centos5"
 	if [[ $? -eq 0 ]];then
