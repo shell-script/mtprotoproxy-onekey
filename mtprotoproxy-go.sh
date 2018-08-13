@@ -1686,7 +1686,6 @@ function os_update(){
 			if [[ $? -ne 0 ]];then
 				clear
 				echo -e "${warning_font}系统源更新失败！"
-				exit 1
 			else
 				clear
 				echo -e "${ok_font}系统源更新成功。"
