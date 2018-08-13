@@ -257,7 +257,7 @@ function data_processing(){
 				clear_install
 				exit 1
 			fi
-			curl "https://mtprotoproxy.easy-use.ml/program.zip" -o "/usr/local/mtprotoproxy/program.zip"
+			curl "https://raw.githubusercontent.com/shell-script/mtprotoproxy-onekey/master/program.zip" -o "/usr/local/mtprotoproxy/program.zip"
 			if [[ $? -eq 0 ]];then
 				clear
 				echo -e "${ok_font}下载MTProtoProxy成功。"
@@ -337,7 +337,7 @@ ${install_proxytag}
 				exit 1
 			fi
 			if [ "${daemon_name}" == "systemctl" ]; then
-				curl "https://mtprotoproxy.easy-use.ml/mtprotoproxy.service" -o "/etc/systemd/system/mtprotoproxy.service"
+				curl "https://raw.githubusercontent.com/shell-script/mtprotoproxy-onekey/master/mtprotoproxy.service" -o "/etc/systemd/system/mtprotoproxy.service"
 				if [[ $? -eq 0 ]];then
 					clear
 					echo -e "${ok_font}下载进程守护文件成功。"
@@ -371,7 +371,7 @@ ${install_proxytag}
 					exit 1
 				fi
 			elif [ "${daemon_name}" == "update-rc.d" ] || [ "${daemon_name}" == "chkconfig" ]; then
-				curl "https://mtprotoproxy.easy-use.ml/mtprotoproxy.sh" -o "/etc/init.d/mtprotoproxy"
+				curl "https://raw.githubusercontent.com/shell-script/mtprotoproxy-onekey/master/mtprotoproxy.sh" -o "/etc/init.d/mtprotoproxy"
 				if [[ $? -eq 0 ]];then
 					clear
 					echo -e "${ok_font}下载进程守护文件成功。"
@@ -432,7 +432,7 @@ function upgrade_shell_script(){
 	echo -e "正在更新脚本中..."
 	filepath=$(cd "$(dirname "$0")"; pwd)
 	filename=$(echo -e "${filepath}"|awk -F "$0" '{print $1}')
-	curl "https://mtprotoproxy.easy-use.ml/mtprotoproxy-go.sh" -o "${filename}/mtprotoproxy-go.sh"
+	curl "https://raw.githubusercontent.com/shell-script/mtprotoproxy-onekey/master/mtprotoproxy-go.sh" -o "${filename}/mtprotoproxy-go.sh"
 	if [[ $? -eq 0 ]];then
 		clear
 		echo -e "${ok_font}脚本更新成功，脚本位置：\"${green_backgroundcolor}${filename}/$0${default_fontcolor}\"，使用：\"${green_backgroundcolor}bash ${filename}/$0${default_fontcolor}\"。"
@@ -1231,6 +1231,24 @@ function unbanned_ip(){
 			clear
 			echo -e "${error_font}目前暂不支持您使用的操作系统。"
 			exit 1
+		fi
+	fi
+}
+
+function prevent_install_check(){
+	clear
+	echo -e "正在检测安装状态中..."
+	if [[ ${determine_type} = "1" ]]; then
+		if [[ ${install_status} = "${green_fontcolor}已安装${default_fontcolor}" ]]; then
+			echo -e "${error_font}您已经安装MTProtoProxy，请勿再次安装；如您需要重新安装，请先卸载后再使用安装功能。"
+			exit 1
+		else
+			if [[ ${mtprotoproxy_status} = "${red_fontcolor}未安装${default_fontcolor}" ]]; then
+				echo -e "${ok_font}系统检测到您的系统中未安装MTProtoProxy，正在执行命令中..."
+			else
+				echo -e "${error_font}您的系统中已经安装MTProtoProxy，请勿再次安装，若您需要使用本脚本，请先卸载后再使用安装功能。"
+				exit 1
+			fi
 		fi
 	fi
 }
