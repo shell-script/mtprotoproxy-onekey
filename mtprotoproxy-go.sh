@@ -1722,7 +1722,7 @@ function os_update(){
 			echo -e "${error_font}目前暂不支持您使用的操作系统的版本号。"
 			exit 1
 		fi
-		pip3.6 install --upgrade pip
+		pip3 install --upgrade pip
 		if [[ $? -ne 0 ]];then
 			clear
 			echo -e "${error_font}pip3更新失败！"
@@ -1731,11 +1731,10 @@ function os_update(){
 			clear
 			echo -e "${ok_font}pip3更新成功。"
 		fi
-		pip3.6 install cryptography
+		pip3 install cryptography
 		if [[ $? -ne 0 ]];then
 			clear
-			echo -e "${error_font}cryptography安装失败！"
-			exit 1
+			echo -e "${warning_font}cryptography安装失败！"
 		else
 			clear
 			echo -e "${ok_font}cryptography安装成功。"
@@ -1780,8 +1779,7 @@ function os_update(){
 		pip3 install cryptography
 		if [[ $? -ne 0 ]];then
 			clear
-			echo -e "${error_font}cryptography安装失败！"
-			exit 1
+			echo -e "${warning_font}cryptography安装失败！"
 		else
 			clear
 			echo -e "${ok_font}cryptography安装成功。"
