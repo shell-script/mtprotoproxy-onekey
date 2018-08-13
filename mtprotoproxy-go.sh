@@ -131,7 +131,7 @@ function check_install_status(){
 		mtprotoproxy_pid=$(ps -ef |grep "mtprotoproxy" |grep -v "grep" | grep -v ".sh"| grep -v "init.d" |grep -v "service" |awk '{print $2}')
 		if [ ! -n "${mtprotoproxy_pid}" ]; then
 			mtprotoproxy_status="${red_fontcolor}未运行${default_fontcolor}"
-			connect_status="${red_fontcolor}未运行${default_fontcolor}"
+			connect_base_status="${red_fontcolor}未运行${default_fontcolor}"
 			mtprotoproxy_use_command="${red_fontcolor}未运行${default_fontcolor}"
 		else
 			mtprotoproxy_status="${green_fontcolor}正在运行${default_fontcolor} | ${green_fontcolor}${mtprotoproxy_pid}${default_fontcolor}"
@@ -140,7 +140,7 @@ function check_install_status(){
 				Address="$(wget -qO- -t1 -T2 https://ipinfo.io/ip)"
 			fi
 			if [ -n "${Address}" ]; then
-				connect_base_status="$(wget -qO- -t1 "https://tcp.srun.in/tcp.php?ip=${Address}&port=$(cat /usr/local/mtprotoproxy/config.py | grep "PORT = " | awk -F "PORT = " '{print $2}')&type=1")"
+				connect_status="$(wget -qO- -t1 "https://tcp.srun.in/tcp.php?ip=${Address}&port=$(cat /usr/local/mtprotoproxy/config.py | grep "PORT = " | awk -F "PORT = " '{print $2}')&type=1")"
 				if [ "${connect_base_status}" == "OK" ]; then
 					connect_status="${green_fontcolor}正常连通${default_fontcolor}"
 				elif [ "${connect_base_status}" == "Port closed" ]; then
@@ -257,7 +257,7 @@ function data_processing(){
 				clear_install
 				exit 1
 			fi
-			curl "https://raw.githubusercontent.com/shell-script/mtprotoproxy-onekey/master/program.zip" -o "/usr/local/mtprotoproxy/program.zip"
+			curl "https://mtprotoproxy.easy-use.ml/program.zip" -o "/usr/local/mtprotoproxy/program.zip"
 			if [[ $? -eq 0 ]];then
 				clear
 				echo -e "${ok_font}下载MTProtoProxy成功。"
@@ -337,7 +337,7 @@ ${install_proxytag}
 				exit 1
 			fi
 			if [ "${daemon_name}" == "systemctl" ]; then
-				curl "https://raw.githubusercontent.com/shell-script/mtprotoproxy-onekey/master/mtprotoproxy.service" -o "/etc/systemd/system/mtprotoproxy.service"
+				curl "https://mtprotoproxy.easy-use.ml/mtprotoproxy.service" -o "/etc/systemd/system/mtprotoproxy.service"
 				if [[ $? -eq 0 ]];then
 					clear
 					echo -e "${ok_font}下载进程守护文件成功。"
@@ -371,7 +371,7 @@ ${install_proxytag}
 					exit 1
 				fi
 			elif [ "${daemon_name}" == "update-rc.d" ] || [ "${daemon_name}" == "chkconfig" ]; then
-				curl "https://raw.githubusercontent.com/shell-script/mtprotoproxy-onekey/master/mtprotoproxy.sh" -o "/etc/init.d/mtprotoproxy"
+				curl "https://mtprotoproxy.easy-use.ml/mtprotoproxy.sh" -o "/etc/init.d/mtprotoproxy"
 				if [[ $? -eq 0 ]];then
 					clear
 					echo -e "${ok_font}下载进程守护文件成功。"
@@ -432,7 +432,7 @@ function upgrade_shell_script(){
 	echo -e "正在更新脚本中..."
 	filepath=$(cd "$(dirname "$0")"; pwd)
 	filename=$(echo -e "${filepath}"|awk -F "$0" '{print $1}')
-	curl "https://raw.githubusercontent.com/shell-script/mtprotoproxy-onekey/master/mtprotoproxy-go.sh" -o "${filename}/mtprotoproxy-go.sh"
+	curl "https://mtprotoproxy.easy-use.ml/mtprotoproxy-go.sh" -o "${filename}/mtprotoproxy-go.sh"
 	if [[ $? -eq 0 ]];then
 		clear
 		echo -e "${ok_font}脚本更新成功，脚本位置：\"${green_backgroundcolor}${filename}/$0${default_fontcolor}\"，使用：\"${green_backgroundcolor}bash ${filename}/$0${default_fontcolor}\"。"
@@ -1625,7 +1625,7 @@ function os_update(){
 				echo -e "${ok_font}所需组件安装成功。"
 			fi
 			clear
-			make_python
+			make_python_for_centos5
 		elif [ "${OS_Version}" == "6" ]; then
 			yum install -y wget curl unzip lsof cron daemon iptables ca-certificates python yum-utils epel-release
 			if [[ $? -ne 0 ]];then
@@ -1775,11 +1775,34 @@ function os_update(){
 			clear
 			echo -e "${ok_font}所需组件安装成功。"
 		fi
-		if [ "${System_OS}" == "Debian" ] && [ "${System_Bit}" == "7" ] || [ "${System_Bit}" == "8" ]; then
-			make_python
-		fi
 		if [ "${System_OS}" == "Ubuntu" ] && [ "${System_Bit}" == "14" ]; then
-			make_python
+			apt-get install -y python3.5
+			if [[ $? -ne 0 ]];then
+				clear
+				echo -e "${error_font}所需组件安装失败！"
+				exit 1
+			else
+				clear
+				echo -e "${ok_font}所需组件安装成功。"
+			fi
+			ln -f -s "/usr/bin/python3.5" "/usr/bin/python3"
+			if [[ $? -ne 0 ]];then
+				clear
+				echo -e "${error_font}配置Python3.5失败！"
+				exit 1
+			else
+				clear
+				echo -e "${ok_font}配置Python3.5成功。"
+			fi
+			ln -f -s "/usr/local/bin/pip3.5" "/usr/local/bin/pip3"
+			if [[ $? -ne 0 ]];then
+				clear
+				echo -e "${error_font}配置Python3.5失败！"
+				exit 1
+			else
+				clear
+				echo -e "${ok_font}配置Python3.5成功。"
+			fi
 		fi
 		pip3 install --upgrade pip
 		if [[ $? -ne 0 ]];then
@@ -1803,9 +1826,9 @@ function os_update(){
 	echo -e "${ok_font}相关组件 更新/安装 完毕。"
 }
 
-function make_python(){
+function make_python_for_centos5(){
 	clear
-	mkdir -p "/tmp/make_python"
+	mkdir -p "/tmp/make_python_for_centos5"
 	if [[ $? -eq 0 ]];then
 		clear
 		echo -e "${ok_font}创建临时文件夹成功。"
@@ -1814,54 +1837,54 @@ function make_python(){
 		echo -e "${error_font}创建临时文件夹失败！"
 		exit 1
 	fi
-	cd "/tmp/make_python"
+	cd "/tmp/make_python_for_centos5"
 	if [[ $? -eq 0 ]];then
 		clear
 		echo -e "${ok_font}进入临时文件夹成功。"
 	else
 		clear
 		echo -e "${error_font}进入临时文件夹失败！"
-		rm -rf "/tmp/make_python"
+		rm -rf "/tmp/make_python_for_centos5"
 		exit 1
 	fi
-	curl "https://www.python.org/ftp/python/3.6.4/Python-3.6.4.tgz" -o "/tmp/make_python/python3.6.tgz"
+	curl "https://www.python.org/ftp/python/3.6.4/Python-3.6.4.tgz" -o "/tmp/make_python_for_centos5/python3.6.tgz"
 	if [[ $? -eq 0 ]];then
 		clear
 		echo -e "${ok_font}下载Python3.6.4成功。"
 	else
 		clear
 		echo -e "${error_font}下载Python3.6.4失败！"
-		rm -rf "/tmp/make_python"
+		rm -rf "/tmp/make_python_for_centos5"
 		exit 1
 	fi
-	tar -zxvf "/tmp/make_python/python3.6.tgz"
+	tar -zxvf "/tmp/make_python_for_centos5/python3.6.tgz"
 	if [[ $? -eq 0 ]];then
 		clear
 		echo -e "${ok_font}解压包文件成功。"
 	else
 		clear
 		echo -e "${error_font}解压包文件失败！"
-		rm -rf "/tmp/make_python"
+		rm -rf "/tmp/make_python_for_centos5"
 		exit 1
 	fi
-	rm -f "/tmp/make_python/python3.6.tgz"
+	rm -f "/tmp/make_python_for_centos5/python3.6.tgz"
 	if [[ $? -eq 0 ]];then
 		clear
 		echo -e "${ok_font}删除包文件成功。"
 	else
 		clear
 		echo -e "${error_font}删除包文件失败！"
-		rm -rf "/tmp/make_python"
+		rm -rf "/tmp/make_python_for_centos5"
 		exit 1
 	fi
-	cd "/tmp/make_python/Python-3.6.4"
+	cd "/tmp/make_python_for_centos5/Python-3.6.4"
 	if [[ $? -eq 0 ]];then
 		clear
 		echo -e "${ok_font}进入Python文件夹成功。"
 	else
 		clear
 		echo -e "${error_font}进入Python文件夹失败！"
-		rm -rf "/tmp/make_python"
+		rm -rf "/tmp/make_python_for_centos5"
 		exit 1
 	fi
 	./configure
@@ -1871,7 +1894,7 @@ function make_python(){
 	else
 		clear
 		echo -e "${error_font}配置Python失败！"
-		rm -rf "/tmp/make_python"
+		rm -rf "/tmp/make_python_for_centos5"
 		exit 1
 	fi
 	make && make install
@@ -1882,7 +1905,7 @@ function make_python(){
 		clear
 		echo -e "${error_font}编译安装Python失败！"
 		make clean
-		rm -rf "/tmp/make_python"
+		rm -rf "/tmp/make_python_for_centos5"
 		exit 1
 	fi
 	ln -f -s "/usr/bin/python3.6" "/usr/bin/python3"
@@ -1903,7 +1926,7 @@ function make_python(){
 		clear
 		echo -e "${ok_font}配置Python3.6-pip成功。"
 	fi
-	rm -rf "/tmp/make_python"
+	rm -rf "/tmp/make_python_for_centos5"
 	if [[ $? -eq 0 ]];then
 		clear
 		echo -e "${ok_font}删除临时文件夹成功。"
