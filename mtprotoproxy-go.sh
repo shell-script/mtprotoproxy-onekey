@@ -1626,7 +1626,7 @@ function os_update(){
 				echo -e "${ok_font}所需组件安装成功。"
 			fi
 			clear
-			if [ "$(python3 -V)" == "3.6.4" ]; then
+			if [ -n "$(python3 -V | grep "3.5")" ] || [ -n "$(python3 -V | grep "3.6")" ]; then
 				clear
 			else
 				make_python
@@ -1790,7 +1790,7 @@ function os_update(){
 				clear
 				echo -e "${ok_font}所需组件安装成功。"
 			fi
-			if [ "$(python3 -V)" == "3.6.4" ]; then
+			if [ -n "$(python3 -V | grep "3.5")" ] || [ -n "$(python3 -V | grep "3.6")" ]; then
 				clear
 			else
 				make_python
@@ -1806,7 +1806,7 @@ function os_update(){
 				clear
 				echo -e "${ok_font}所需组件安装成功。"
 			fi
-			if [ "$(python3 -V)" == "3.6.4" ]; then
+			if [ -n "$(python3 -V | grep "3.5")" ] || [ -n "$(python3 -V | grep "3.6")" ]; then
 				clear
 			else
 				make_python
