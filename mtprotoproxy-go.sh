@@ -1767,6 +1767,24 @@ function os_update(){
 			clear
 			echo -e "${ok_font}所需组件安装成功。"
 		fi
+		ln -f -s "/usr/bin/python3.5" "/usr/bin/python3"
+		if [[ $? -ne 0 ]];then
+			clear
+			echo -e "${error_font}配置Python3.6失败！"
+			exit 1
+		else
+			clear
+			echo -e "${ok_font}配置Python3.6成功。"
+		fi
+		ln -f -s "/usr/bin/pip3.5" "/usr/bin/pip3"
+		if [[ $? -ne 0 ]];then
+			clear
+			echo -e "${error_font}配置Python3.6-pip失败！"
+			exit 1
+		else
+			clear
+			echo -e "${ok_font}配置Python3.6-pip成功。"
+		fi
 		pip3 install --upgrade pip
 		if [[ $? -ne 0 ]];then
 			clear
