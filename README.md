@@ -21,6 +21,6 @@ curl -O https://raw.githubusercontent.com/shell-script/mtprotoproxy-onekey/maste
 + **Ubuntu 18.04** <br>
 - - -
 - - -
-## Copyright Notice
+## License Notice
 **Program.zip** uses the **MIT license**, and this project has modified **config.py**.<br>
-Original project URL: [alexbers/mtprotoproxy](https://github.com/alexbers/mtprotoproxy)
+Original project URL: [alexbers/mtprotoproxy](https://github.com/alexbers/mtprotoproxy).
