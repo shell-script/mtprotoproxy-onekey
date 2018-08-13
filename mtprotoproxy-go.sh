@@ -1606,7 +1606,7 @@ function os_update(){
 			echo -e "${ok_font}系统组件更新成功。"
 		fi
 		if [ "${OS_Version}" == "5" ]; then
-			yum install -y wget curl unzip lsof cron daemon iptables ca-certificates python yum-utils gcc make
+			yum install -y wget curl unzip lsof cron daemon iptables ca-certificates python yum-utils gcc make zlib*
 			if [[ $? -ne 0 ]];then
 				clear
 				echo -e "${error_font}所需组件安装失败！"
@@ -1776,7 +1776,7 @@ function os_update(){
 			echo -e "${ok_font}所需组件安装成功。"
 		fi
 		if [ "${System_OS}" == "Debian" ] && [ "${OS_Version}" == "7" ] || [ "${OS_Version}" == "8" ]; then
-			apt-get install -y gcc make
+			apt-get install -y gcc make zlib*
 			if [[ $? -ne 0 ]];then
 				clear
 				echo -e "${error_font}所需组件安装失败！"
@@ -1788,7 +1788,7 @@ function os_update(){
 			make_python
 		fi
 		if [ "${System_OS}" == "Ubuntu" ] && [ "${OS_Version}" == "14" ]; then
-			apt-get install -y gcc make
+			apt-get install -y gcc make zlib*
 			if [[ $? -ne 0 ]];then
 				clear
 				echo -e "${error_font}所需组件安装失败！"
