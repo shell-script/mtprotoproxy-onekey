@@ -1645,7 +1645,7 @@ function os_update(){
 				clear
 				echo -e "${ok_font}所需组件安装成功。"
 			fi
-			ln -f -s "/usr/bin/python3.6" "/usr/bin/python3"
+			ln --force -s "/usr/bin/python3.6" "/usr/bin/python3"
 			if [[ $? -ne 0 ]];then
 				clear
 				echo -e "${error_font}配置Python3.6失败！"
@@ -1654,7 +1654,7 @@ function os_update(){
 				clear
 				echo -e "${ok_font}配置Python3.6成功。"
 			fi
-			ln -f -s "/usr/bin/pip3.6" "/usr/bin/pip3"
+			ln --force -s "/usr/bin/pip3.6" "/usr/bin/pip3"
 			if [[ $? -ne 0 ]];then
 				clear
 				echo -e "${error_font}配置Python3.6-pip失败！"
