@@ -1768,6 +1768,15 @@ function os_update(){
 			echo -e "${ok_font}所需组件安装成功。"
 		fi
 		if [ "${System_OS}" == "Ubuntu" ] && [ "${System_Bit}" == "14" ]; then
+			apt-get install -y python3.5
+			if [[ $? -ne 0 ]];then
+				clear
+				echo -e "${error_font}所需组件安装失败！"
+				exit 1
+			else
+				clear
+				echo -e "${ok_font}所需组件安装成功。"
+			fi
 			ln -f -s "/usr/bin/python3.5" "/usr/bin/python3"
 			if [[ $? -ne 0 ]];then
 				clear
