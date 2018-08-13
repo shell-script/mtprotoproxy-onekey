@@ -1626,7 +1626,11 @@ function os_update(){
 				echo -e "${ok_font}所需组件安装成功。"
 			fi
 			clear
-			make_python
+			if [ "$(python3 -V)" == "3.6.4" ]; then
+				clear
+			else
+				make_python
+			fi
 		elif [ "${OS_Version}" == "6" ]; then
 			yum install -y wget curl unzip lsof cron daemon iptables ca-certificates python yum-utils epel-release
 			if [[ $? -ne 0 ]];then
@@ -1786,7 +1790,11 @@ function os_update(){
 				clear
 				echo -e "${ok_font}所需组件安装成功。"
 			fi
-			make_python
+			if [ "$(python3 -V)" == "3.6.4" ]; then
+				clear
+			else
+				make_python
+			fi
 		fi
 		if [ "${System_OS}" == "Ubuntu" ] && [ "${OS_Version}" == "14" ]; then
 			apt-get install -y gcc make zlib*
@@ -1798,7 +1806,11 @@ function os_update(){
 				clear
 				echo -e "${ok_font}所需组件安装成功。"
 			fi
-			make_python
+			if [ "$(python3 -V)" == "3.6.4" ]; then
+				clear
+			else
+				make_python
+			fi
 		fi
 		pip3 install --upgrade pip
 		if [[ $? -ne 0 ]];then
