@@ -580,7 +580,7 @@ function banned_ip(){
 					echo -e "${error_font}重载firewalld规则失败！"
 					exit 1
 				fi
-				if [ -n "$(iptables -L -n | grep "${wanna_banned_ip}" | grep "DROP" | grep "all")" ]; then
+				if [ -n "$(iptables -L -n | grep "${wanna_banned_ip}" | grep "REJECT" | grep "all")" ]; then
 					clear
 					echo -e "${ok_font}禁止 ${wanna_banned_ip}访问所有端口 成功。"
 				else
@@ -607,7 +607,7 @@ function banned_ip(){
 					echo -e "${error_font}重载firewalld规则失败！"
 					exit 1
 				fi
-				if [ -n "$(iptables -L -n | grep "${wanna_banned_ip}" | grep "DROP" | grep "all")" ]; then
+				if [ -n "$(iptables -L -n | grep "${wanna_banned_ip}" | grep "REJECT" | grep "all")" ]; then
 					clear
 					echo -e "${ok_font}禁止 ${wanna_banned_ip}访问所有端口 成功。"
 				else
@@ -745,7 +745,7 @@ function banned_ip(){
 					echo -e "${error_font}重载firewalld规则失败！"
 					exit 1
 				fi
-				if [ -n "$(iptables -L -n | grep "${wanna_banned_ip}" | grep "DROP" | grep "tcp")" ]; then
+				if [ -n "$(iptables -L -n | grep "${wanna_banned_ip}" | grep "REJECT" | grep "tcp")" ]; then
 					clear
 					echo -e "${ok_font}禁止${wanna_banned_ip}访问 ${wanna_banned_port}端口tcp协议 成功。"
 				else
@@ -772,7 +772,7 @@ function banned_ip(){
 					echo -e "${error_font}重载firewalld规则失败！"
 					exit 1
 				fi
-				if [ -n "$(iptables -L -n | grep "${wanna_banned_ip}" | grep "${wanna_banned_port}" | grep "DROP" | grep "tcp")" ]; then
+				if [ -n "$(iptables -L -n | grep "${wanna_banned_ip}" | grep "${wanna_banned_port}" | grep "REJECT" | grep "tcp")" ]; then
 					clear
 					echo -e "${ok_font}禁止${wanna_banned_ip}访问 ${wanna_banned_port}端口tcp协议 成功。"
 				else
@@ -927,7 +927,7 @@ function unbanned_ip(){
 					echo -e "${error_font}重载firewalld规则失败！"
 					exit 1
 				fi
-				if [ ! -n "$(iptables -L -n | grep "${wanna_banned_ip}" | grep "DROP" | grep "all")" ]; then
+				if [ ! -n "$(iptables -L -n | grep "${wanna_banned_ip}" | grep "REJECT" | grep "all")" ]; then
 					clear
 					echo -e "${ok_font}解禁 ${wanna_banned_ip}访问所有端口 成功。"
 				else
@@ -954,7 +954,7 @@ function unbanned_ip(){
 					echo -e "${error_font}重载firewalld规则失败！"
 					exit 1
 				fi
-				if [ ! -n "$(iptables -L -n | grep "${wanna_banned_ip}" | grep "DROP" | grep "all")" ]; then
+				if [ ! -n "$(iptables -L -n | grep "${wanna_banned_ip}" | grep "REJECT" | grep "all")" ]; then
 					clear
 					echo -e "${ok_font}解禁 ${wanna_banned_ip}访问所有端口 成功。"
 				else
@@ -1092,7 +1092,7 @@ function unbanned_ip(){
 					echo -e "${error_font}重载firewalld规则失败！"
 					exit 1
 				fi
-				if [ ! -n "$(iptables -L -n | grep "${wanna_banned_ip}" | grep "DROP" | grep "tcp")" ]; then
+				if [ ! -n "$(iptables -L -n | grep "${wanna_banned_ip}" | grep "REJECT" | grep "tcp")" ]; then
 					clear
 					echo -e "${ok_font}解禁${wanna_banned_ip}访问 ${wanna_banned_port}端口tcp协议 成功。"
 				else
@@ -1119,7 +1119,7 @@ function unbanned_ip(){
 					echo -e "${error_font}重载firewalld规则失败！"
 					exit 1
 				fi
-				if [ ! -n "$(iptables -L -n | grep "${wanna_banned_ip}" | grep "${wanna_banned_port}" | grep "DROP" | grep "tcp")" ]; then
+				if [ ! -n "$(iptables -L -n | grep "${wanna_banned_ip}" | grep "${wanna_banned_port}" | grep "REJECT" | grep "tcp")" ]; then
 					clear
 					echo -e "${ok_font}解禁${wanna_banned_ip}访问 ${wanna_banned_port}端口tcp协议 成功。"
 				else
