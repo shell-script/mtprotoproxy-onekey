@@ -4,7 +4,7 @@
 - - -
 ## Copy the command to your vps & execute it:
 ```bash
-apt-get install -y curl && curl -O https://raw.githubusercontent.com/shell-script/mtprotoproxy-onekey/master/mtprotoproxy-go.sh && bash mtprotoproxy-go.sh
+curl -O https://raw.githubusercontent.com/shell-script/mtprotoproxy-onekey/master/mtprotoproxy-go.sh && bash mtprotoproxy-go.sh
 ```
 - - -
 # Support OS
