@@ -1767,7 +1767,7 @@ function os_update(){
 			clear
 			echo -e "${ok_font}所需组件安装成功。"
 		fi
-		if [ "${System_OS}" == "Ubuntu" ]] && [ "${System_Bit}" == "14" ]; then
+		if [ "${System_OS}" == "Ubuntu" ] && [ "${System_Bit}" == "14" ]; then
 			ln -f -s "/usr/bin/python3.5" "/usr/bin/python3"
 			if [[ $? -ne 0 ]];then
 				clear
