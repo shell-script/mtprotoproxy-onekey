@@ -885,6 +885,10 @@ function banned_ip(){
 			echo -e "${error_font}目前暂不支持您使用的操作系统。"
 			exit 1
 		fi
+	else
+		clear
+		echo -e "${error_font}输入错误，请检查后重试。"
+		exit 1
 	fi
 }
 
@@ -1232,6 +1236,10 @@ function unbanned_ip(){
 			echo -e "${error_font}目前暂不支持您使用的操作系统。"
 			exit 1
 		fi
+	else
+		clear
+		echo -e "${error_font}输入错误，请检查后重试。"
+		exit 1
 	fi
 }
 
@@ -1617,7 +1625,7 @@ function os_update(){
 				echo -e "${ok_font}所需组件安装成功。"
 			fi
 			clear
-			make_python_for_centos5
+			make_python
 		elif [ "${OS_Version}" == "6" ]; then
 			yum install -y wget curl unzip lsof cron daemon iptables ca-certificates python yum-utils epel-release
 			if [[ $? -ne 0 ]];then
@@ -1767,34 +1775,11 @@ function os_update(){
 			clear
 			echo -e "${ok_font}所需组件安装成功。"
 		fi
+		if [ "${System_OS}" == "Debian" ] && [ "${System_Bit}" == "7" ] || [ "${System_Bit}" == "8" ]; then
+			make_python
+		fi
 		if [ "${System_OS}" == "Ubuntu" ] && [ "${System_Bit}" == "14" ]; then
-			apt-get install -y python3.5
-			if [[ $? -ne 0 ]];then
-				clear
-				echo -e "${error_font}所需组件安装失败！"
-				exit 1
-			else
-				clear
-				echo -e "${ok_font}所需组件安装成功。"
-			fi
-			ln -f -s "/usr/bin/python3.5" "/usr/bin/python3"
-			if [[ $? -ne 0 ]];then
-				clear
-				echo -e "${error_font}配置Python3.5失败！"
-				exit 1
-			else
-				clear
-				echo -e "${ok_font}配置Python3.5成功。"
-			fi
-			ln -f -s "/usr/local/bin/pip3.5" "/usr/local/bin/pip3"
-			if [[ $? -ne 0 ]];then
-				clear
-				echo -e "${error_font}配置Python3.5失败！"
-				exit 1
-			else
-				clear
-				echo -e "${ok_font}配置Python3.5成功。"
-			fi
+			make_python
 		fi
 		pip3 install --upgrade pip
 		if [[ $? -ne 0 ]];then
@@ -1818,9 +1803,9 @@ function os_update(){
 	echo -e "${ok_font}相关组件 更新/安装 完毕。"
 }
 
-function make_python_for_centos5(){
+function make_python(){
 	clear
-	mkdir -p "/tmp/make_python_for_centos5"
+	mkdir -p "/tmp/make_python"
 	if [[ $? -eq 0 ]];then
 		clear
 		echo -e "${ok_font}创建临时文件夹成功。"
@@ -1829,54 +1814,54 @@ function make_python_for_centos5(){
 		echo -e "${error_font}创建临时文件夹失败！"
 		exit 1
 	fi
-	cd "/tmp/make_python_for_centos5"
+	cd "/tmp/make_python"
 	if [[ $? -eq 0 ]];then
 		clear
 		echo -e "${ok_font}进入临时文件夹成功。"
 	else
 		clear
 		echo -e "${error_font}进入临时文件夹失败！"
-		rm -rf "/tmp/make_python_for_centos5"
+		rm -rf "/tmp/make_python"
 		exit 1
 	fi
-	curl "https://www.python.org/ftp/python/3.6.4/Python-3.6.4.tgz" -o "/tmp/make_python_for_centos5/python3.6.tgz"
+	curl "https://www.python.org/ftp/python/3.6.4/Python-3.6.4.tgz" -o "/tmp/make_python/python3.6.tgz"
 	if [[ $? -eq 0 ]];then
 		clear
 		echo -e "${ok_font}下载Python3.6.4成功。"
 	else
 		clear
 		echo -e "${error_font}下载Python3.6.4失败！"
-		rm -rf "/tmp/make_python_for_centos5"
+		rm -rf "/tmp/make_python"
 		exit 1
 	fi
-	tar -zxvf "/tmp/make_python_for_centos5/python3.6.tgz"
+	tar -zxvf "/tmp/make_python/python3.6.tgz"
 	if [[ $? -eq 0 ]];then
 		clear
 		echo -e "${ok_font}解压包文件成功。"
 	else
 		clear
 		echo -e "${error_font}解压包文件失败！"
-		rm -rf "/tmp/make_python_for_centos5"
+		rm -rf "/tmp/make_python"
 		exit 1
 	fi
-	rm -f "/tmp/make_python_for_centos5/python3.6.tgz"
+	rm -f "/tmp/make_python/python3.6.tgz"
 	if [[ $? -eq 0 ]];then
 		clear
 		echo -e "${ok_font}删除包文件成功。"
 	else
 		clear
 		echo -e "${error_font}删除包文件失败！"
-		rm -rf "/tmp/make_python_for_centos5"
+		rm -rf "/tmp/make_python"
 		exit 1
 	fi
-	cd "/tmp/make_python_for_centos5/Python-3.6.4"
+	cd "/tmp/make_python/Python-3.6.4"
 	if [[ $? -eq 0 ]];then
 		clear
 		echo -e "${ok_font}进入Python文件夹成功。"
 	else
 		clear
 		echo -e "${error_font}进入Python文件夹失败！"
-		rm -rf "/tmp/make_python_for_centos5"
+		rm -rf "/tmp/make_python"
 		exit 1
 	fi
 	./configure
@@ -1886,7 +1871,7 @@ function make_python_for_centos5(){
 	else
 		clear
 		echo -e "${error_font}配置Python失败！"
-		rm -rf "/tmp/make_python_for_centos5"
+		rm -rf "/tmp/make_python"
 		exit 1
 	fi
 	make && make install
@@ -1897,7 +1882,7 @@ function make_python_for_centos5(){
 		clear
 		echo -e "${error_font}编译安装Python失败！"
 		make clean
-		rm -rf "/tmp/make_python_for_centos5"
+		rm -rf "/tmp/make_python"
 		exit 1
 	fi
 	ln -f -s "/usr/bin/python3.6" "/usr/bin/python3"
@@ -1918,7 +1903,7 @@ function make_python_for_centos5(){
 		clear
 		echo -e "${ok_font}配置Python3.6-pip成功。"
 	fi
-	rm -rf "/tmp/make_python_for_centos5"
+	rm -rf "/tmp/make_python"
 	if [[ $? -eq 0 ]];then
 		clear
 		echo -e "${ok_font}删除临时文件夹成功。"
