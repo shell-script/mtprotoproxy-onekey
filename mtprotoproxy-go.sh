@@ -1775,7 +1775,7 @@ function os_update(){
 			clear
 			echo -e "${ok_font}所需组件安装成功。"
 		fi
-		if [ "${System_OS}" == "Debian" ] && [ "${System_Bit}" == "7" ] || [ "${System_Bit}" == "8" ]; then
+		if [ "${System_OS}" == "Debian" ] && [ "${OS_Version}" == "7" ] || [ "${OS_Version}" == "8" ]; then
 			apt-get install -y gcc make zlib-devel bzip2-devel openssl-devel ncurses-devel sqlite-devel readline-devel tk-devel gdbm-devel db4-devel libpcap-devel xz-devel
 			if [[ $? -ne 0 ]];then
 				clear
@@ -1787,7 +1787,7 @@ function os_update(){
 			fi
 			make_python
 		fi
-		if [ "${System_OS}" == "Ubuntu" ] && [ "${System_Bit}" == "14" ]; then
+		if [ "${System_OS}" == "Ubuntu" ] && [ "${OS_Version}" == "14" ]; then
 			apt-get install -y gcc make zlib-devel bzip2-devel openssl-devel ncurses-devel sqlite-devel readline-devel tk-devel gdbm-devel db4-devel libpcap-devel xz-devel
 			if [[ $? -ne 0 ]];then
 				clear
