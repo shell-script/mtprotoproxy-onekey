@@ -99,7 +99,7 @@ function start_running(){
 	else
 		cd "/usr/local/mtprotoproxy"
 		echo -e "Try to start MTProtoProxy..."
-		nohup /bin/env python3 "/usr/local/mtprotoproxy/mtprotoproxy.py" > "/usr/local/mtprotoproxy/running_log.log" 2>&1 &
+		nohup python3 "/usr/local/mtprotoproxy/mtprotoproxy.py" > "/usr/local/mtprotoproxy/running_log.log" 2>&1 &
 		sleep 3s
 		check_running
 		if [[ $? -eq 0 ]]; then
