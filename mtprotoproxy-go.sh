@@ -64,6 +64,7 @@ function check_os(){
 		echo -e "${error_font}目前暂不支持您使用的操作系统。"
 		exit 1
 	fi
+	clear
 	echo -e "${ok_font}该脚本支持您的系统。"
 	clear
 	echo -e "正在检测系统构架是否被支持..."
@@ -417,6 +418,7 @@ ${install_proxytag}
 			else
 				clear
 				echo -e "${error_font}写入安装信息失败！"
+				clear_install_reason="写入安装信息失败。"
 				clear_install
 				exit 1
 			fi
@@ -521,7 +523,6 @@ function echo_connetion_info(){
 		connectiong_port="$(cat "/usr/local/mtproto/install_port.txt")"
 	fi
 	connectiong_ips="$(netstat -anp | grep 'ESTABLISHED' | grep 'python3' | grep 'tcp' | grep ":${connectiong_port}" | awk '{print $5}' | awk -F ":" '{print $1}' | sort -u | grep -E -o "([0-9]{1,3}[\.]){3}[0-9]{1,3}")"
-	connectiong_ips_with_port="$(netstat -anp | grep 'ESTABLISHED' | grep 'python3' | grep 'tcp' | grep ":${connectiong_port}" | awk '{print $5}' | sort -u)"
 	if [ ! -n "${connectiong_ips}" ]; then
 		connectiong_ips_number=0
 	else
@@ -535,7 +536,7 @@ function echo_connetion_info(){
 		do
 			current_ip="$(echo "${connectiong_ips}" |sed -n "$count_number"p)"
 			current_ip_address="$(wget -qO- -t1 -T2 http://freeapi.ipip.net/${current_ip}|sed 's/\"//g;s/,//g;s/\[//g;s/\]//g')"
-			echo -e "${green_backgroundcolor}[${current_ip_address}]${connectiong_ips_with_port}${default_fontcolor}"
+			echo -e "${green_backgroundcolor}[${current_ip_address}]${connectiong_ips}${default_fontcolor}"
 			sleep 1
 		done
 	fi
