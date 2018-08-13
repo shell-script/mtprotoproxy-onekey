@@ -131,7 +131,7 @@ function check_install_status(){
 		mtprotoproxy_pid=$(ps -ef |grep "mtprotoproxy" |grep -v "grep" | grep -v ".sh"| grep -v "init.d" |grep -v "service" |awk '{print $2}')
 		if [ ! -n "${mtprotoproxy_pid}" ]; then
 			mtprotoproxy_status="${red_fontcolor}未运行${default_fontcolor}"
-			connect_base_status="${red_fontcolor}未运行${default_fontcolor}"
+			connect_status="${red_fontcolor}未运行${default_fontcolor}"
 			mtprotoproxy_use_command="${red_fontcolor}未运行${default_fontcolor}"
 		else
 			mtprotoproxy_status="${green_fontcolor}正在运行${default_fontcolor} | ${green_fontcolor}${mtprotoproxy_pid}${default_fontcolor}"
