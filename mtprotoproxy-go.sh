@@ -49,15 +49,15 @@ function check_os(){
 	elif [ -n "$(grep bian /etc/issue)" -o "$(lsb_release -is 2>/dev/null)" == 'Debian' ]; then
 		System_OS="Debian"
 		[ ! -e "$(command -v lsb_release)" ] && { apt-get -y update; apt-get -y install lsb-release; clear; }
-		OS_Version=$(lsb_release -sr | awk -F. '{print $1}')
+		OS_Version="$(lsb_release -sr | awk -F. '{print $1}')"
 	elif [ -n "$(grep Deepin /etc/issue)" -o "$(lsb_release -is 2>/dev/null)" == 'Deepin' ]; then
 		System_OS="Debian"
 		[ ! -e "$(command -v lsb_release)" ] && { apt-get -y update; apt-get -y install lsb-release; clear; }
-		OS_Version=$(lsb_release -sr | awk -F. '{print $1}')
+		OS_Version="$(lsb_release -sr | awk -F. '{print $1}')"
 	elif [ -n "$(grep Ubuntu /etc/issue)" -o "$(lsb_release -is 2>/dev/null)" == 'Ubuntu' -o -n "$(grep 'Linux Mint' /etc/issue)" ]; then
 		System_OS="Ubuntu"
 		[ ! -e "$(command -v lsb_release)" ] && { apt-get -y update; apt-get -y install lsb-release; clear; }
-		OS_Version=$(lsb_release -sr | awk -F. '{print $1}')
+		OS_Version="$(lsb_release -sr | awk -F. '{print $1}')"
 		[ -n "$(grep 'Linux Mint 18' /etc/issue)" ] && OS_Version=16
 	else
 		clear
@@ -117,7 +117,7 @@ function check_os(){
 }
 
 function check_install_status(){
-	install_type=$(cat /usr/local/mtprotoproxy/install_type.txt)
+	install_type="$(cat /usr/local/mtprotoproxy/install_type.txt)"
 	if [ ! -n "${install_type}" ]; then
 		install_status="${red_fontcolor}未安装${default_fontcolor}"
 		mtprotoproxy_use_command="${red_fontcolor}未安装${default_fontcolor}"
@@ -125,11 +125,11 @@ function check_install_status(){
 	else
 		install_status="${green_fontcolor}已安装${default_fontcolor}"
 	fi
-	mtprotoproxy_program=$(find /usr/local/mtprotoproxy/mtprotoproxy.py)
+	mtprotoproxy_program="$(find /usr/local/mtprotoproxy/mtprotoproxy.py)"
 	if [ ! -n "${mtprotoproxy_program}" ]; then
 		mtprotoproxy_status="${red_fontcolor}未安装${default_fontcolor}"
 	else
-		mtprotoproxy_pid=$(ps -ef |grep "mtprotoproxy" |grep -v "grep" | grep -v ".sh"| grep -v "init.d" |grep -v "service" |awk '{print $2}')
+		mtprotoproxy_pid="$(ps -ef |grep "mtprotoproxy" |grep -v "grep" | grep -v ".sh"| grep -v "init.d" |grep -v "service" |awk '{print $2}')"
 		if [ ! -n "${mtprotoproxy_pid}" ]; then
 			mtprotoproxy_status="${red_fontcolor}未运行${default_fontcolor}"
 			connect_status="${red_fontcolor}未运行${default_fontcolor}"
@@ -538,7 +538,7 @@ function echo_connetion_info(){
 			current_ip="$(echo "${connectiong_ips}" |sed -n "$count_number"p)"
 			current_ip_with_port="$(echo "${connectiong_ips_with_port}" |sed -n "$count_number"p)"
 			current_ip_address="$(wget -qO- -t1 -T2 http://freeapi.ipip.net/${current_ip}|sed 's/\"//g;s/,//g;s/\[//g;s/\]//g')"
-			echo -e "${green_backgroundcolor}[${current_ip_address}]${current_ip_with_port}${default_fontcolor}"
+			echo -e "${green_backgroundcolor}[${current_ip_address}] ${current_ip_with_port}${default_fontcolor}"
 			sleep 1
 		done
 	fi
