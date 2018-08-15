@@ -1838,7 +1838,7 @@ function os_update(){
 
 function make_python(){
 	clear
-	mkdir -p "/tmp/make_python"
+	mkdir -p "/etc/make_python"
 	if [[ $? -eq 0 ]];then
 		clear
 		echo -e "${ok_font}创建临时文件夹成功。"
@@ -1847,54 +1847,54 @@ function make_python(){
 		echo -e "${error_font}创建临时文件夹失败！"
 		exit 1
 	fi
-	cd "/tmp/make_python"
+	cd "/etc/make_python"
 	if [[ $? -eq 0 ]];then
 		clear
 		echo -e "${ok_font}进入临时文件夹成功。"
 	else
 		clear
 		echo -e "${error_font}进入临时文件夹失败！"
-		rm -rf "/tmp/make_python"
+		rm -rf "/etc/make_python"
 		exit 1
 	fi
-	curl "https://www.python.org/ftp/python/3.6.4/Python-3.6.4.tgz" -o "/tmp/make_python/python3.6.tgz"
+	curl "https://www.python.org/ftp/python/3.6.4/Python-3.6.4.tgz" -o "/etc/make_python/python3.6.tgz"
 	if [[ $? -eq 0 ]];then
 		clear
 		echo -e "${ok_font}下载Python3.6.4成功。"
 	else
 		clear
 		echo -e "${error_font}下载Python3.6.4失败！"
-		rm -rf "/tmp/make_python"
+		rm -rf "/etc/make_python"
 		exit 1
 	fi
-	tar -zxvf "/tmp/make_python/python3.6.tgz"
+	tar -zxvf "/etc/make_python/python3.6.tgz"
 	if [[ $? -eq 0 ]];then
 		clear
 		echo -e "${ok_font}解压包文件成功。"
 	else
 		clear
 		echo -e "${error_font}解压包文件失败！"
-		rm -rf "/tmp/make_python"
+		rm -rf "/etc/make_python"
 		exit 1
 	fi
-	rm -f "/tmp/make_python/python3.6.tgz"
+	rm -f "/etc/make_python/python3.6.tgz"
 	if [[ $? -eq 0 ]];then
 		clear
 		echo -e "${ok_font}删除包文件成功。"
 	else
 		clear
 		echo -e "${error_font}删除包文件失败！"
-		rm -rf "/tmp/make_python"
+		rm -rf "/etc/make_python"
 		exit 1
 	fi
-	cd "/tmp/make_python/Python-3.6.4"
+	cd "/etc/make_python/Python-3.6.4"
 	if [[ $? -eq 0 ]];then
 		clear
 		echo -e "${ok_font}进入Python文件夹成功。"
 	else
 		clear
 		echo -e "${error_font}进入Python文件夹失败！"
-		rm -rf "/tmp/make_python"
+		rm -rf "/etc/make_python"
 		exit 1
 	fi
 	./configure
@@ -1904,7 +1904,7 @@ function make_python(){
 	else
 		clear
 		echo -e "${error_font}配置Python失败！"
-		rm -rf "/tmp/make_python"
+		rm -rf "/etc/make_python"
 		exit 1
 	fi
 	make && make install
@@ -1915,7 +1915,7 @@ function make_python(){
 		clear
 		echo -e "${error_font}编译安装Python失败！"
 		make clean
-		rm -rf "/tmp/make_python"
+		rm -rf "/etc/make_python"
 		exit 1
 	fi
 	ln -f -s "/usr/bin/python3.6" "/usr/bin/python3"
@@ -1936,7 +1936,7 @@ function make_python(){
 		clear
 		echo -e "${ok_font}配置Python3.6-pip成功。"
 	fi
-	rm -rf "/tmp/make_python"
+	rm -rf "/etc/make_python"
 	if [[ $? -eq 0 ]];then
 		clear
 		echo -e "${ok_font}删除临时文件夹成功。"
