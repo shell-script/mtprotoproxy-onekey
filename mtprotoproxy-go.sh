@@ -1897,7 +1897,7 @@ function make_python(){
 		rm -rf "/etc/make_python"
 		exit 1
 	fi
-	./configure
+	./configure --enable-optimizations
 	if [[ $? -eq 0 ]];then
 		clear
 		echo -e "${ok_font}配置Python成功。"
