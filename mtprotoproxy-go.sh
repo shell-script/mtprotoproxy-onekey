@@ -28,7 +28,7 @@ function set_fonts_colors(){
 function check_os(){
 	clear
 	echo -e "正在检测当前是否为ROOT用户..."
-	if [ ${EUID} -eq "0" ]; then
+	if [ "${EUID}" -eq "0" ]; then
 		clear
 		echo -e "${ok_font}检测到当前为Root用户。"
 	else
@@ -46,7 +46,7 @@ function check_os(){
 	elif [ -n "$(grep 'Amazon Linux AMI release' /etc/issue)" -o -e /etc/system-release ]; then
 		System_OS="CentOS"
 		OS_Version=6
-	elif [ -n "$(grep bian /etc/issue)" -o "$(lsb_release -is 2>/dev/null)" == 'Debian' ]; then
+	elif [ -n "$(grep Debian /etc/issue)" -o "$(lsb_release -is 2>/dev/null)" == 'Debian' ]; then
 		System_OS="Debian"
 		[ ! -e "$(command -v lsb_release)" ] && { apt-get -y update; apt-get -y install lsb-release; clear; }
 		OS_Version="$(lsb_release -sr | awk -F. '{print $1}')"
@@ -113,7 +113,7 @@ function check_os(){
 		exit 1
 	fi
 	clear
-	echo -e "${ok_font}Support OS: ${System_OS}${OS_Version} $(uname -m) with ${daemon_name}."
+	echo -e "${ok_font}Support OS: ${System_OS}${OS_Version} ${System_Bit} with ${daemon_name}."
 }
 
 function check_install_status(){
@@ -222,7 +222,7 @@ function data_processing(){
 		restart_service
 	elif [[ ${determine_type} = "8" ]]; then
 		prevent_uninstall_check
-		echo_connetion_info
+		echo_connection_info
 	elif [[ ${determine_type} = "9" ]]; then
 		prevent_uninstall_check
 		banned_ip
@@ -515,28 +515,28 @@ function restart_service(){
 	fi
 }
 
-function echo_connetion_info(){
+function echo_connection_info(){
 	clear
 	echo -e "正在获取连接信息中..."
-	connectiong_port="$(cat "/usr/local/mtprotoproxy/config.py" | grep "PORT = " | awk -F "PORT = " '{print $2}')"
-	if [ ! -n "${connectiong_port}" ]; then
-		connectiong_port="$(cat "/usr/local/mtproto/install_port.txt")"
+	connecting_port="$(cat "/usr/local/mtprotoproxy/config.py" | grep "PORT = " | awk -F "PORT = " '{print $2}')"
+	if [ ! -n "${connecting_port}" ]; then
+		connecting_port="$(cat "/usr/local/mtproto/install_port.txt")"
 	fi
-	connectiong_ips="$(netstat -anp | grep 'ESTABLISHED' | grep 'python3' | grep 'tcp' | grep ":${connectiong_port}" | awk '{print $5}' | awk -F ":" '{print $1}' | sort -u | grep -E -o "([0-9]{1,3}[\.]){3}[0-9]{1,3}")"
-	connectiong_ips_with_port="$(netstat -anp | grep 'ESTABLISHED' | grep 'python3' | grep 'tcp' | grep ":${connectiong_port}" | awk '{print $5}' | sort -u)"
-	if [ ! -n "${connectiong_ips}" ]; then
-		connectiong_ips_number=0
+	connecting_ips="$(netstat -anp | grep 'ESTABLISHED' | grep 'python3' | grep 'tcp' | grep ":${connecting_port}" | awk '{print $5}' | awk -F ":" '{print $1}' | sort -u | grep -E -o "([0-9]{1,3}[\.]){3}[0-9]{1,3}")"
+	connecting_ips_with_port="$(netstat -anp | grep 'ESTABLISHED' | grep 'python3' | grep 'tcp' | grep ":${connecting_port}" | awk '{print $5}' | sort -u)"
+	if [ ! -n "${connecting_ips}" ]; then
+		connecting_ips_number=0
 	else
-		connectiong_ips_number="$(echo -e "${connectiong_ips}" | wc -l)"
+		connecting_ips_number="$(echo -e "${connecting_ips}" | wc -l)"
 	fi
 	clear
-	echo -e "${info_font}目前共有 ${connectiong_ips_number} 位用户连接到了此MTProtoProxy。"
-	if [ "${connectiong_ips_number}" -gt "0" ]; then
+	echo -e "${info_font}目前共有 ${connecting_ips_number} 位用户连接到了此MTProtoProxy。"
+	if [ "${connecting_ips_number}" -gt "0" ]; then
 		echo -e "\n${info_font}连接IP如下："
-		for((count_number = "${connectiong_ips_number}"; count_number >= 1; count_number--))
+		for((count_number = "${connecting_ips_number}"; count_number >= 1; count_number--))
 		do
-			current_ip="$(echo "${connectiong_ips}" |sed -n "$count_number"p)"
-			current_ip_with_port="$(echo "${connectiong_ips_with_port}" |sed -n "$count_number"p)"
+			current_ip="$(echo "${connecting_ips}" |sed -n "$count_number"p)"
+			current_ip_with_port="$(echo "${connecting_ips_with_port}" |sed -n "$count_number"p)"
 			current_ip_address="$(wget -qO- -t1 -T2 http://freeapi.ipip.net/${current_ip}|sed 's/\"//g;s/,//g;s/\[//g;s/\]//g')"
 			echo -e "${green_backgroundcolor}[${current_ip_address}] ${current_ip_with_port}${default_fontcolor}"
 			sleep 1
