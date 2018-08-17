@@ -30,7 +30,7 @@ function set_fonts_colors(){
 }
 
 function base_check(){
-	[ $(id -u) != "0" ] && { echo "${error_font}You must be root to run this script."; exit_code=1; }
+	[ $(id -u) != "0" ] && { echo "${error_font}You must be root to run this script."; exit 1; }
 
 	if [ -n "$(grep 'Aliyun Linux release' /etc/issue)" -o -e /etc/redhat-release ]; then
 		System_OS="CentOS"
@@ -55,7 +55,7 @@ function base_check(){
 		[ -n "$(grep 'Linux Mint 18' /etc/issue)" ] && OS_Version=16
 	else
 		echo -e "${error_font}Unsupport OS, please change your OS and retry."
-		exit_code=1
+		exit 1
 	fi
 
 	if [[ "$(uname -m)" == "i686" ]] || [[ "$(uname -m)" == "i386" ]]; then
@@ -78,7 +78,7 @@ function base_check(){
 		System_Bit="s390x"
 	else
 		echo -e "${error_font}Unsupported architecture, please change your architecture and retry."
-		exit_code=1
+		exit 1
 	fi
 }
 
@@ -95,12 +95,12 @@ function start_running(){
 	check_running
 	if [[ $? -eq 0 ]]; then
 		echo -e "${info_font}MTProtoProxy is already running, PID: ${running_pid}."
-		exit_code=0
+		exit_code=2
 	else
 		cd "/usr/local/mtprotoproxy"
 		echo -e "Try to start MTProtoProxy..."
 		nohup python3 "/usr/local/mtprotoproxy/mtprotoproxy.py" > "/usr/local/mtprotoproxy/running_log.log" 2>&1 &
-		sleep 3s
+		sleep 3
 		check_running
 		if [[ $? -eq 0 ]]; then
 			echo -e "${ok_font}Started successfully, MTProtoProxy is running now."
@@ -125,11 +125,11 @@ function stop_running(){
 		fi
 	else
 		echo -e "${info_font}MTProtoProxy is already stopped."
-		exit_code=0
+		exit_code=2
 	fi
 }
 
-function check_running_status(){
+function running_status(){
 	check_running
 	if [[ $? -eq 0 ]]; then
 		echo -e "${info_font}MTProtoProxy is running, PID: ${running_pid}."
@@ -142,7 +142,7 @@ function check_running_status(){
 
 function restart_running(){
 	stop_running
-	sleep 3s
+	sleep 3
 	start_running
 }
 
@@ -160,7 +160,7 @@ function main(){
 			restart_running
 		;;
 		"status")
-			check_running_status
+			running_status
 		;;
 		*)
 			echo -e "${info_font}Usage: $0 {start|stop|restart|status}" >&2
@@ -179,4 +179,5 @@ case "$1" in
 		exit_code=3
 	;;
 esac
+
 exit "${exit_code}"
