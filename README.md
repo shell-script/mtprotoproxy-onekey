@@ -8,11 +8,11 @@ curl -O https://raw.githubusercontent.com/shell-script/mtprotoproxy-onekey/maste
 ```
 - - -
 # Support OS
-+ CentOS 5 **(Untested)** <br>
++ CentOS 5 (Untested) <br>
 + **CentOS 6** <br>
 + **CentOS 7** <br>
 
-+ Debian 7 **(Untested)** <br>
++ Debian 7 (Untested) <br>
 + **Debian 8** <br>
 + **Debian 9** <br>
 
