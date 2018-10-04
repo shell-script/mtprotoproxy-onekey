@@ -121,7 +121,6 @@ function check_install_status(){
 	if [ ! -n "${install_type}" ]; then
 		install_status="${red_fontcolor}未安装${default_fontcolor}"
 		mtprotoproxy_use_command="${red_fontcolor}未安装${default_fontcolor}"
-		connect_status="${red_fontcolor}未安装${default_fontcolor}"
 	else
 		install_status="${green_fontcolor}已安装${default_fontcolor}"
 	fi
@@ -132,27 +131,12 @@ function check_install_status(){
 		mtprotoproxy_pid="$(ps -ef |grep "mtprotoproxy" |grep -v "grep" | grep -v ".sh"| grep -v "init.d" |grep -v "service" |awk '{print $2}')"
 		if [ ! -n "${mtprotoproxy_pid}" ]; then
 			mtprotoproxy_status="${red_fontcolor}未运行${default_fontcolor}"
-			connect_status="${red_fontcolor}未运行${default_fontcolor}"
 			mtprotoproxy_use_command="${red_fontcolor}未运行${default_fontcolor}"
 		else
 			mtprotoproxy_status="${green_fontcolor}正在运行${default_fontcolor} | ${green_fontcolor}${mtprotoproxy_pid}${default_fontcolor}"
 			Address="$(wget -qO- -t1 -T2 -4 https://api.ip.sb/ip)"
 			if [ ! -n "${Address}" ]; then
 				Address="$(wget -qO- -t1 -T2 https://ipinfo.io/ip)"
-			fi
-			if [ -n "${Address}" ]; then
-				connect_base_status="$(wget -qO- -t1 "https://tcp.srun.in/tcp.php?ip=${Address}&port=$(cat /usr/local/mtprotoproxy/config.py | grep "PORT = " | awk -F "PORT = " '{print $2}')&type=1")"
-				if [ "${connect_base_status}" == "OK" ]; then
-					connect_status="${green_fontcolor}正常连通${default_fontcolor}"
-				elif [ "${connect_base_status}" == "Port closed" ]; then
-					connect_status="${warning_fontcolor}端口未开启${default_fontcolor}"
-				elif [ "${connect_base_status}" == "No" ]; then
-					connect_status="${red_fontcolor}无法连通${default_fontcolor}"
-				else
-					connect_status="${red_fontcolor}检测失败${default_fontcolor}"
-				fi
-			else
-				connect_status="${red_fontcolor}检测失败${default_fontcolor}"
 			fi
 			if [ -n "$(cat "/usr/local/mtprotoproxy/running_log.log" | sed 's/tg: //g' | grep "tg://")" ]; then
 				mtprotoproxy_use_command="\n${green_backgroundcolor}$(cat "/usr/local/mtprotoproxy/running_log.log" | sed 's/tg: //g' | grep "tg://")${default_fontcolor}"
@@ -172,7 +156,6 @@ function echo_install_list(){
 	1.安装MTProtoProxy
 --------------------------------------------------------------------------------------------------
 MTProtoProxy当前运行状态：${mtprotoproxy_status}
-当前服务器连通状况[To CN]：${connect_status}
 	2.更新脚本
 	3.更新程序
 	4.卸载程序
