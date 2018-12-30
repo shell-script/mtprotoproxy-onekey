@@ -1,6 +1,5 @@
 # MTProtoProxy-Onekey
 ## MTPROTOPROXY EASY TO USE
-### Index: [mtprotoproxy.easy-use.ml](https://mtprotoproxy.easy-use.ml)
 - - -
 ## Copy the command to your vps & execute it:
 ```bash
