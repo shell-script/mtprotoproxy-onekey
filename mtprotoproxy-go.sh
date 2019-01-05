@@ -1723,8 +1723,7 @@ function os_update(){
 		pip3 install --upgrade pip
 		if [[ $? -ne 0 ]];then
 			clear
-			echo -e "${error_font}pip3更新失败！"
-			exit 1
+			echo -e "${warning_font}pip3更新失败！"
 		else
 			clear
 			echo -e "${ok_font}pip3更新成功。"
@@ -1800,8 +1799,7 @@ function os_update(){
 		pip3 install --upgrade pip
 		if [[ $? -ne 0 ]];then
 			clear
-			echo -e "${error_font}pip3更新失败！"
-			exit 1
+			echo -e "${warning_font}pip3更新失败！"
 		else
 			clear
 			echo -e "${ok_font}pip3更新成功。"
